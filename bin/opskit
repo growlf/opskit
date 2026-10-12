@@ -729,8 +729,20 @@ _opskit_completion() {{
         setup-completion)
             COMPREPLY=( $(compgen -W "bash zsh" -- "$cur") )
             ;;
+        go)
+            COMPREPLY=( $(compgen -W "" -- "$cur") )
+            ;;
+        web)
+            COMPREPLY=( $(compgen -W "" -- "$cur") )
+            ;;
+        skills)
+            COMPREPLY=( $(compgen -W "setup verify cleanup" -- "$cur") )
+            ;;
+        projects)
+            COMPREPLY=( $(compgen -W "rescan list add config" -- "$cur") )
+            ;;
         *)
-            COMPREPLY=( $(compgen -W "env init member scan status lint setup-completion dns" -- "$cur") )
+            COMPREPLY=( $(compgen -W "env init member scan status lint setup-completion dns go web skills projects" -- "$cur") )
             ;;
     esac
 }}
@@ -748,7 +760,11 @@ _opskit() {{
               status:'inventory summary'
               lint:'inventory vs device record check'
               dns:'resolve and query DNS via the technitium MCP tools'
-              setup-completion:'install tab completion')
+              setup-completion:'install tab completion'
+              go:'launch opencode in an opskit project (TUI)'
+              web:'launch opencode web --mdns'
+              skills:'manage opskit skill symlinks (setup/verify/cleanup)'
+              projects:'manage project cache (rescan/list/add/config)')
     _describe 'command' commands
     _arguments '--env[environment name]:env:'
 }}
@@ -803,6 +819,18 @@ def cmd_check(args):
             ok(f"{cmd:25s}  {which(cmd)}")
         else:
             fail(f"{cmd:25s}  not found  (apt install {pkg})")
+
+    # OpsKit-specific tools
+    if which('fzf'):
+        ok(f"{'fzf':25s}  {which('fzf')}")
+    else:
+        fail(f"{'fzf':25s}  not found  (apt install fzf)")
+
+    bwunlock_sh = str(REPO_ROOT / 'bin' / 'bwunlock.sh')
+    if Path(bwunlock_sh).exists():
+        ok(f"{'bwunlock.sh':25s}  {bwunlock_sh}")
+    else:
+        warn(f"{'bwunlock.sh':25s}  not found at {bwunlock_sh}")
 
     # Python packages
     for pkg in ['yaml', 'jsonschema']:
@@ -1811,6 +1839,32 @@ Without Semaphore, playbooks run via the CLI with  bin/ap.sh <playbook>.
     pm_verify = pm_sub.add_parser('verify', help='verify MCP config + vault session state')
     pm_verify.add_argument('--server', default=None, help='server to verify (default: all)')
 
+    # go — TUI project launcher
+    pg = sub.add_parser('go', help='launch opencode in an opskit project (TUI)')
+    pg.add_argument('project', nargs='?', help='project name or path')
+
+    # web — launch opencode web
+    pw = sub.add_parser('web', help='launch opencode web --mdns')
+
+    # skills — symlink management
+    ps = sub.add_parser('skills', help='manage opskit skill symlinks')
+    ps_sub = ps.add_subparsers(dest='skills_command')
+    ps_setup = ps_sub.add_parser('setup', help='create skill symlinks')
+    ps_setup.add_argument('--force', action='store_true', help='overwrite conflicts')
+    ps_sub.add_parser('verify', help='verify skill symlinks')
+    ps_sub.add_parser('cleanup', help='remove skill symlinks')
+
+    # projects — cache management
+    pp = sub.add_parser('projects', help='manage project cache')
+    pp_sub = pp.add_subparsers(dest='projects_command')
+    pp_sub.add_parser('rescan', help='force full rescan')
+    pp_sub.add_parser('list', help='show cached projects')
+    pp_add = pp_sub.add_parser('add', help='add a single project')
+    pp_add.add_argument('path', help='path to project directory')
+    pp_config = pp_sub.add_parser('config', help='show or set projects_dir')
+    pp_config.add_argument('action', nargs='?', choices=['show', 'set'], default='show')
+    pp_config.add_argument('path', nargs='?', help='new projects_dir path')
+
     args = p.parse_args()
 
     if args.command == 'init':
@@ -1842,6 +1896,29 @@ Without Semaphore, playbooks run via the CLI with  bin/ap.sh <playbook>.
         sys.exit(cmd_doctor(args))
     elif args.command == 'mcp':
         sys.exit(cmd_mcp(args))
+    elif args.command == 'go':
+        project = getattr(args, 'project', None)
+        subprocess.run([sys.executable, str(SCRIPT_DIR / 'opskit-go.py'), project] if project else [sys.executable, str(SCRIPT_DIR / 'opskit-go.py')])
+        sys.exit(0)
+    elif args.command == 'web':
+        subprocess.run([sys.executable, str(SCRIPT_DIR / 'opskit-web.py')])
+        sys.exit(0)
+    elif args.command == 'skills':
+        cmd = getattr(args, 'skills_command', None)
+        force = getattr(args, 'force', False)
+        args_list = [sys.executable, str(SCRIPT_DIR / 'opskit-skills.py'), cmd] if cmd else [sys.executable, str(SCRIPT_DIR / 'opskit-skills.py')]
+        if force:
+            args_list.append('--force')
+        subprocess.run(args_list)
+        sys.exit(0)
+    elif args.command == 'projects':
+        cmd = getattr(args, 'projects_command', None)
+        path = getattr(args, 'path', None)
+        args_list = [sys.executable, str(SCRIPT_DIR / 'opskit-projects.py'), cmd] if cmd else [sys.executable, str(SCRIPT_DIR / 'opskit-projects.py')]
+        if path:
+            args_list.append(path)
+        subprocess.run(args_list)
+        sys.exit(0)
     else:
         p.print_help()
 
