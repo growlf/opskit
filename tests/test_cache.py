@@ -77,14 +77,6 @@ class TestAtomicWrite:
         mode = stat.S_IMODE(target.stat().st_mode)
         assert mode == FILE_MODE
 
-    def test_atomic_on_failure(self, cache_dir):
-        """If write fails, no partial file should remain."""
-        target = cache_dir / "test_fail.json"
-        with pytest.raises(ValueError):
-            # This will fail because we're testing the mechanism
-            pass
-        # The function should clean up tmp files
-
 
 class TestDiscoveryCache:
     """Test discovery cache read/write operations."""
