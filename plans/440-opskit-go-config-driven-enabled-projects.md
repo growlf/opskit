@@ -6,8 +6,8 @@ Closes #440.
 
 `opskit go`/`web` must offer **only the user's enabled projects**, read from
 `~/.opskit/config.yml`, and must find projects **nested** under `projects_dir`.
-Today discovery lists every top-level git repo (102 here) and never recurses, so a
-project such as `lfnw/lfnw-django` is invisible and the fzf list is noise.
+Today discovery lists every top-level git repo and never recurses, so a project
+nested under a grouping directory is invisible and the fzf list is noise.
 
 ## Background
 
@@ -25,9 +25,9 @@ iterates a single level (`iterdir()`) and accepts any directory with `.git/`.
 ```yaml
 projects_dir: /home/user/Projects
 projects:
-  - Systate
-  - BMS
-  - lfnw/lfnw-django
+  - alpha
+  - beta
+  - group/nested-app
 ```
 
 `projects` is a list of selectors, resolved in this order: absolute path, path
@@ -60,8 +60,7 @@ shows what exists) — the launcher gates on the bootstrap prompt instead.
 - `opskit projects bootstrap|add|remove` maintain the list; `list`/`rescan` respect it.
 - Launcher: fix the no-op sort condition, replace substring matching with a
   subsequence (fzf-style) match over name/basename/rel, add inline fzf (`--height`),
-  and make git detail lazy so scanning no longer shells out to `git` per project
-  (the ~19 s `opskit go` delay).
+  and make git detail lazy so scanning no longer shells out to `git` per project.
 - Cache invalidation also triggers when `config.yml` is newer than the cache.
 
 ## Critique
@@ -77,7 +76,7 @@ shows what exists) — the launcher gates on the bootstrap prompt instead.
 
 ## Tests
 
-`tests/test_cache.py` (config round-trip, config-mtime staleness), 
+`tests/test_cache.py` (config round-trip, config-mtime staleness),
 `tests/test_opskit_projects.py` (recursive discovery through a grouping dir,
 worktree exclusion, enabled filter, unmatched-selector warning, bootstrap
 members-only, add/remove, no git at scan time), `tests/test_tui_matching.py`

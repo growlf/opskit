@@ -81,20 +81,20 @@ class TestFuzzySubsequence:
     """Subsequence matching over name / basename / nested rel path."""
 
     def test_noncontiguous_subsequence(self):
-        projects = [{"name": "lfnw-django", "path": "/p/lfnw/lfnw-django"}]
-        assert len(fuzzy_match_projects("lfdj", projects)) == 1
+        projects = [{"name": "nested-app", "path": "/p/group/nested-app"}]
+        assert len(fuzzy_match_projects("neap", projects)) == 1
 
     def test_matches_nested_rel_path(self):
         projects = [
-            {"name": "lfnw-django", "path": "/p/lfnw/lfnw-django", "rel": "lfnw/lfnw-django"}
+            {"name": "nested-app", "path": "/p/group/nested-app", "rel": "group/nested-app"}
         ]
-        assert len(fuzzy_match_projects("lfnw", projects)) == 1
+        assert len(fuzzy_match_projects("group", projects)) == 1
 
     def test_matches_nested_query_form(self):
         projects = [
-            {"name": "lfnw-django", "path": "/p/lfnw/lfnw-django", "rel": "lfnw/lfnw-django"}
+            {"name": "nested-app", "path": "/p/group/nested-app", "rel": "group/nested-app"}
         ]
-        assert len(fuzzy_match_projects("lfnw/lfnw", projects)) == 1
+        assert len(fuzzy_match_projects("group/nested", projects)) == 1
 
     def test_rejects_non_subsequence(self):
         projects = [{"name": "Phoenix", "path": "/p/Phoenix"}]

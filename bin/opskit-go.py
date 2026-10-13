@@ -114,7 +114,7 @@ def _subsequence_score(query, target):
     """Score query as a subsequence of target, or None if it isn't one.
 
     Rewards consecutive runs and word-boundary hits (fzf-style) so that
-    'lfnw' prefers 'lfnw-django' over an incidental scatter of letters.
+    'group' prefers 'group/nested-app' over an incidental scatter of letters.
     """
     qi = 0
     score = 0

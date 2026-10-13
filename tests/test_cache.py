@@ -230,8 +230,8 @@ class TestConfig:
 
     def test_projects_round_trip(self, cache_dir):
         from opskit import _cache
-        _cache.write_config({"projects_dir": "/tmp/p", "projects": ["A", "lfnw/x"]})
-        assert _cache.get_projects() == ["A", "lfnw/x"]
+        _cache.write_config({"projects_dir": "/tmp/p", "projects": ["A", "group/x"]})
+        assert _cache.get_projects() == ["A", "group/x"]
 
     def test_null_projects_normalised_to_empty(self, cache_dir):
         from opskit import _cache

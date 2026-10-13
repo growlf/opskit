@@ -161,11 +161,11 @@ class TestEnabledFilter:
         assert [p["name"] for p in _cache(tree["home"])["projects"]] == ["Demo"]
 
     def test_selector_matches_nested_rel_path(self, tree):
-        (tree["projects"] / "lfnw" / "lfnw-django" / ".git").mkdir(parents=True)
+        (tree["projects"] / "group" / "nested-app" / ".git").mkdir(parents=True)
         (tree["projects"] / "Other" / ".git").mkdir(parents=True)
-        _write_config(tree["home"], tree["projects"], projects=["lfnw/lfnw-django"])
+        _write_config(tree["home"], tree["projects"], projects=["group/nested-app"])
         _run(["rescan"], tree["env"])
-        assert [p["rel"] for p in _cache(tree["home"])["projects"]] == ["lfnw/lfnw-django"]
+        assert [p["rel"] for p in _cache(tree["home"])["projects"]] == ["group/nested-app"]
 
     def test_unmatched_selector_warns(self, tree):
         (tree["projects"] / "Demo" / ".git").mkdir(parents=True)
