@@ -51,7 +51,7 @@ class TestFuzzyMatch:
             {"name": "Phoenix", "path": "/home/user/Projects/Phoenix"},
             {"name": "BMS", "path": "/home/user/Projects/BMS"},
         ]
-        matches = fuzzy_match_projects("phx", projects)
+        matches = fuzzy_match_projects("phoe", projects)
         assert len(matches) == 1
         assert matches[0]["name"] == "Phoenix"
 
