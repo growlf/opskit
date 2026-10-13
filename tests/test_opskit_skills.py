@@ -7,13 +7,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 sys.path.insert(0, str(Path(__file__).parent.parent / "opskit"))
 
-# Reuse the skills tests
-from test_skills import TestGetSkills, TestSymlinkCreation
+from test_skills import TestOpskitSkills
 
-class TestSkillsGet(TestGetSkills):
-    """Test skill discovery."""
-    pass
-
-class TestSkillsSymlink(TestSymlinkCreation):
-    """Test symlink creation."""
+class TestSkills(TestOpskitSkills):
+    """Test opskit-skills.py."""
     pass

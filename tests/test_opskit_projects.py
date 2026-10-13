@@ -7,13 +7,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 sys.path.insert(0, str(Path(__file__).parent.parent / "opskit"))
 
-# Reuse the project discovery tests
-from test_projects import TestScanProjectDir, TestDiscoveryCacheIntegration
+from test_projects import TestDiscoveryCache
 
-class TestProjectsRescan(TestScanProjectDir):
-    """Test project rescan."""
-    pass
-
-class TestProjectsCache(TestDiscoveryCacheIntegration):
+class TestProjectsCache(TestDiscoveryCache):
     """Test project cache."""
     pass
