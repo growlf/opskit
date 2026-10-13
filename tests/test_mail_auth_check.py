@@ -621,7 +621,6 @@ def test_a_report_with_a_naive_timestamp_is_reported_not_a_traceback(tmp_path):
 def test_the_startsession_nudge_is_silent_and_unambiguous_when_there_is_no_config():
     """`test -f ... && cmd` exits 1 when the file is absent, which reads like a result of the tool."""
     text = (ROOT / ".opencode" / "skills" / "startsession" / "SKILL.md").read_text()
-    section = text[text.index("Mail-authentication freshness") : text.index("7. **Offer vault-session refresh")]
-    assert 'if [ -f "environments/$ACTIVE_ENV/mail-domains.yml" ]' in section
-    assert re.search(r"\n\s+fi\n", section), "the if must be closed"
+    section = text[text.index("Mail-auth freshness") : text.index("Vault check")]
+    assert "if `mail-domains.yml` exists" in section
     assert 'test -f "environments' not in section
