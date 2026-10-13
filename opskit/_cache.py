@@ -41,6 +41,8 @@ def read_config() -> dict:
         with open(CONFIG_FILE, "r") as f:
             data = yaml.safe_load(f) or {}
     data.setdefault("projects_dir", str(DEFAULT_PROJECTS_DIR))
+    if data.get("projects") is None:
+        data["projects"] = []
     return data
 
 
@@ -53,6 +55,11 @@ def write_config(data: dict):
 def get_projects_dir() -> str:
     """Get the configured projects_dir path."""
     return read_config().get("projects_dir", str(DEFAULT_PROJECTS_DIR))
+
+
+def get_projects() -> list:
+    """Get the enabled-project allow-list from ~/.opskit/config.yml."""
+    return read_config().get("projects", []) or []
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -147,6 +154,14 @@ def cache_is_stale(projects_dir: str) -> bool:
         return True
     stored_mtime = cache.get("projects_dir_mtime")
     if stored_mtime is None or abs(current_mtime - float(stored_mtime)) > 1e-6:
+        return True
+
+    # config.yml newer than the cache → the enabled allow-list may have changed.
+    try:
+        if (CONFIG_FILE.exists()
+                and CONFIG_FILE.stat().st_mtime > LAST_DISCOVERY_FILE.stat().st_mtime + 1e-6):
+            return True
+    except OSError:
         return True
 
     return False
