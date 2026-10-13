@@ -31,7 +31,7 @@ class TestFuzzyMatch:
     def test_exact_match(self):
         projects = [
             {"name": "Phoenix", "path": "/home/user/Projects/Phoenix"},
-            {"name": "BMS", "path": "/home/user/Projects/BMS"},
+            {"name": "Widget", "path": "/home/user/Projects/Widget"},
         ]
         matches = fuzzy_match_projects("Phoenix", projects)
         assert len(matches) == 1
@@ -48,7 +48,7 @@ class TestFuzzyMatch:
     def test_single_fuzzy_match(self):
         projects = [
             {"name": "Phoenix", "path": "/home/user/Projects/Phoenix"},
-            {"name": "BMS", "path": "/home/user/Projects/BMS"},
+            {"name": "Widget", "path": "/home/user/Projects/Widget"},
         ]
         matches = fuzzy_match_projects("phoe", projects)
         assert len(matches) == 1
@@ -57,7 +57,7 @@ class TestFuzzyMatch:
     def test_no_match(self):
         projects = [
             {"name": "Phoenix", "path": "/home/user/Projects/Phoenix"},
-            {"name": "BMS", "path": "/home/user/Projects/BMS"},
+            {"name": "Widget", "path": "/home/user/Projects/Widget"},
         ]
         matches = fuzzy_match_projects("nonexistent", projects)
         assert len(matches) == 0
