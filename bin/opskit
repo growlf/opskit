@@ -729,8 +729,20 @@ _opskit_completion() {{
         setup-completion)
             COMPREPLY=( $(compgen -W "bash zsh" -- "$cur") )
             ;;
+        go)
+            COMPREPLY=( $(compgen -W "" -- "$cur") )
+            ;;
+        web)
+            COMPREPLY=( $(compgen -W "" -- "$cur") )
+            ;;
+        skills)
+            COMPREPLY=( $(compgen -W "setup verify cleanup" -- "$cur") )
+            ;;
+        projects)
+            COMPREPLY=( $(compgen -W "rescan list add config" -- "$cur") )
+            ;;
         *)
-            COMPREPLY=( $(compgen -W "env init member scan status lint setup-completion dns" -- "$cur") )
+            COMPREPLY=( $(compgen -W "env init member scan status lint setup-completion dns go web skills projects" -- "$cur") )
             ;;
     esac
 }}
@@ -748,7 +760,11 @@ _opskit() {{
               status:'inventory summary'
               lint:'inventory vs device record check'
               dns:'resolve and query DNS via the technitium MCP tools'
-              setup-completion:'install tab completion')
+              setup-completion:'install tab completion'
+              go:'launch opencode in an opskit project (TUI)'
+              web:'launch opencode web --mdns'
+              skills:'manage opskit skill symlinks (setup/verify/cleanup)'
+              projects:'manage project cache (rescan/list/add/config)')
     _describe 'command' commands
     _arguments '--env[environment name]:env:'
 }}
@@ -803,6 +819,18 @@ def cmd_check(args):
             ok(f"{cmd:25s}  {which(cmd)}")
         else:
             fail(f"{cmd:25s}  not found  (apt install {pkg})")
+
+    # OpsKit-specific tools
+    if which('fzf'):
+        ok(f"{'fzf':25s}  {which('fzf')}")
+    else:
+        fail(f"{'fzf':25s}  not found  (apt install fzf)")
+
+    bwunlock_sh = str(REPO_ROOT / 'bin' / 'bwunlock.sh')
+    if Path(bwunlock_sh).exists():
+        ok(f"{'bwunlock.sh':25s}  {bwunlock_sh}")
+    else:
+        warn(f"{'bwunlock.sh':25s}  not found at {bwunlock_sh}")
 
     # Python packages
     for pkg in ['yaml', 'jsonschema']:
@@ -1668,6 +1696,17 @@ def _mcp_verify(args) -> int:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def main():
+    # go / web / skills / projects are thin dispatchers onto bin/opskit-*.py.
+    # Intercept before argparse so the sub-script receives its argv verbatim —
+    # including `--help`, which argparse would otherwise intercept here and
+    # answer with a stub that hides the real command surface. The subparsers
+    # below are registered only so `opskit --help` lists these commands.
+    argv = sys.argv[1:]
+    if argv and argv[0] in ('go', 'web', 'skills', 'projects'):
+        script = SCRIPT_DIR / f'opskit-{argv[0]}.py'
+        sys.exit(subprocess.run(
+            [sys.executable, str(script), *argv[1:]]).returncode)
+
     p = argparse.ArgumentParser(
         description="opskit — network operations toolkit",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -1810,6 +1849,16 @@ Without Semaphore, playbooks run via the CLI with  bin/ap.sh <playbook>.
     pm_check = pm_sub.add_parser('check', help='check MCP config structure without vault contact')
     pm_verify = pm_sub.add_parser('verify', help='verify MCP config + vault session state')
     pm_verify.add_argument('--server', default=None, help='server to verify (default: all)')
+
+    # go / web / skills / projects — registered for `opskit --help` listing
+    # only; dispatch is intercepted in main() before argparse runs.
+    for _name, _help in (
+        ('go', 'launch opencode in an opskit project (TUI)'),
+        ('web', 'launch opencode web --mdns'),
+        ('skills', 'manage opskit skill symlinks (setup/verify/cleanup)'),
+        ('projects', 'manage project cache (rescan/list/add/config)'),
+    ):
+        sub.add_parser(_name, help=_help)
 
     args = p.parse_args()
 

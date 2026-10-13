@@ -9,7 +9,7 @@ readonly STATE_DIR="$HOME/.opskit-install/state"
 readonly OPSKIT_DIR="${OPSKIT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || echo "$HOME/Projects/opskit")}"
 OPSKIT_BIN="${OPSKIT_BIN:-$OPSKIT_DIR/bin/opskit}"
 
-PKG_CLI="curl git sudo unzip xclip"
+PKG_CLI="curl git sudo unzip xclip fzf"
 PKG_PY="python3 python3-venv python3-pip"
 
 _red='\033[0;31m'; _grn='\033[0;32m'; _ylo='\033[0;33m'; _bld='\033[1m'; _clr='\033[0m'
