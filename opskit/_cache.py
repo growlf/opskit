@@ -25,6 +25,7 @@ CACHE_DIR_MODE = 0o700
 FILE_MODE = 0o600
 LAST_DISCOVERY_FILE = CACHE_DIR / "last-discovery.json"
 LAST_USED_FILE = CACHE_DIR / "last-used.json"
+OPENCODE_CHECK_FILE = CACHE_DIR / "opencode-version-check.json"
 CONFIG_FILE = CACHE_DIR / "config.yml"
 DEFAULT_PROJECTS_DIR = Path.home() / "Projects"
 MAX_LAST_USED_ENTRIES = 100
@@ -236,3 +237,36 @@ def get_sort_key(project_path: str):
         if entry.get("project_path") == project_path:
             return entry.get("timestamp", "")
     return ""
+
+
+# ── opencode-version-check.json operations ───────────────────────────────────
+
+def read_opencode_check():
+    """Read the cached opencode version check. Returns None if not found."""
+    return _read_json(OPENCODE_CHECK_FILE)
+
+
+def write_opencode_check(data: dict):
+    """Write the opencode version check cache atomically."""
+    _write_json(OPENCODE_CHECK_FILE, data)
+
+
+def opencode_check_is_stale(data, installed) -> bool:
+    """Whether the cached opencode check must be refreshed.
+
+    Stale when the record is missing, older than CACHE_STALE_HOURS, or was
+    recorded against a different installed version (e.g. after an upgrade).
+    """
+    if not data:
+        return True
+    if data.get("installed") != installed:
+        return True
+    checked_at = data.get("checked_at", "")
+    try:
+        checked = datetime.fromisoformat(checked_at)
+        if checked.tzinfo is None:
+            checked = checked.replace(tzinfo=timezone.utc)
+    except (ValueError, TypeError):
+        return True
+    age = (datetime.now(timezone.utc) - checked).total_seconds()
+    return age > CACHE_STALE_HOURS * 3600

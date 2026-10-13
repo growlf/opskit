@@ -30,6 +30,7 @@ import difflib
 import os
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
@@ -44,6 +45,14 @@ from opskit._cache import (
     update_last_used,
     get_projects_dir,
     get_projects,
+    read_opencode_check,
+    write_opencode_check,
+    opencode_check_is_stale,
+)
+from opskit._opencode import (
+    get_installed_version,
+    get_latest_dev_version,
+    is_newer,
 )
 
 
@@ -88,6 +97,58 @@ def ensure_enabled():
         check=False,
     )
     return bool(get_projects())
+
+
+def maybe_offer_opencode_upgrade():
+    """Offer to upgrade opencode before launching, when online and interactive.
+
+    Best-effort and non-fatal: offline, no opencode, or a non-tty all skip
+    silently. The check is cached for CACHE_STALE_HOURS; the actual upgrade is
+    delegated to ``opencode upgrade`` (opencode is its own oracle).
+    """
+    if not sys.stdin.isatty():
+        return
+
+    installed = get_installed_version()
+    if not installed:
+        return
+
+    cache = read_opencode_check()
+    if cache and not opencode_check_is_stale(cache, installed):
+        latest = cache.get("latest")
+    else:
+        latest = get_latest_dev_version()
+        if latest is None:
+            return  # offline / unavailable — skip silently
+        write_opencode_check({
+            "checked_at": datetime.now(timezone.utc).isoformat(),
+            "installed": installed,
+            "latest": latest,
+        })
+
+    if not latest or not is_newer(latest, installed):
+        return
+
+    print(
+        f"OpenCode {installed} -> {latest} is available "
+        "(upgrading restarts the opencode service)."
+    )
+    try:
+        answer = input("Upgrade opencode now? [y/N] ")
+    except EOFError:
+        return
+    if answer.strip().lower() not in ("y", "yes"):
+        return
+
+    try:
+        subprocess.run(["opencode", "upgrade"], check=False)
+    except (FileNotFoundError, OSError):
+        print("Error: opencode not found on PATH", file=sys.stderr)
+        return
+
+    new_version = get_installed_version()
+    if new_version:
+        print(f"opencode upgraded to {new_version}.")
 
 
 def sort_projects_by_last_used(projects):
@@ -292,6 +353,8 @@ def launch_project(project_path):
     os.chdir(project_path)
     env["OPSKIT_PROJECT_PATH"] = project_path
 
+    print("Now starting interactive OpenCode shell...", flush=True)
+
     try:
         os.execvpe("opencode", ["opencode"], env)
     except FileNotFoundError:
@@ -344,6 +407,9 @@ def main():
     parser.add_argument("project", nargs="?", help="Project name or path (optional)")
 
     args = parser.parse_args()
+
+    # Offer an opencode upgrade first, when online (cached ~daily, tty-only).
+    maybe_offer_opencode_upgrade()
 
     # First run with no enabled projects: offer to scan for OpsKit members.
     if not ensure_enabled():
