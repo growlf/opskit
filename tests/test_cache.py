@@ -114,23 +114,62 @@ class TestDiscoveryCache:
         assert len(projects) == 1
         assert projects[0]["name"] == "test"
 
-    def test_cache_stale_when_missing(self, cache_dir, monkeypatch):
-        monkeypatch.setattr("opskit._cache.Path.exists", lambda self: False)
+    def test_cache_stale_when_missing(self, cache_dir):
+        # No cache file written → stale.
         assert cache_is_stale("/tmp/projects") is True
 
-    def test_cache_not_stale_when_fresh(self, cache_dir, monkeypatch):
-        now = datetime.now(timezone.utc).isoformat()
+    def test_cache_not_stale_when_fresh(self, cache_dir, tmp_path):
+        projects_dir = tmp_path / "projects"
+        projects_dir.mkdir()
         data = {
             "version": 1,
-            "timestamp": now,
-            "projects": []
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "projects_dir": str(projects_dir),
+            "projects_dir_mtime": projects_dir.stat().st_mtime,
+            "projects": [],
         }
         write_discovery_cache(data)
-        # Should not be stale (assuming less than 24h has passed)
-        # Note: this test is time-sensitive
-        result = cache_is_stale("/tmp/projects")
-        # If cache was just written, it shouldn't be stale
-        assert result is False or result is True  # Depends on timing
+        assert cache_is_stale(str(projects_dir)) is False
+
+    def test_cache_stale_when_old(self, cache_dir, tmp_path):
+        projects_dir = tmp_path / "projects"
+        projects_dir.mkdir()
+        old = datetime.now(timezone.utc).timestamp() - (CACHE_STALE_HOURS + 1) * 3600
+        data = {
+            "version": 1,
+            "timestamp": datetime.fromtimestamp(old, tz=timezone.utc).isoformat(),
+            "projects_dir": str(projects_dir),
+            "projects_dir_mtime": projects_dir.stat().st_mtime,
+            "projects": [],
+        }
+        write_discovery_cache(data)
+        assert cache_is_stale(str(projects_dir)) is True
+
+    def test_cache_stale_when_dir_mtime_changes(self, cache_dir, tmp_path):
+        projects_dir = tmp_path / "projects"
+        projects_dir.mkdir()
+        data = {
+            "version": 1,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "projects_dir": str(projects_dir),
+            # Recorded mtime deliberately differs from the on-disk one.
+            "projects_dir_mtime": projects_dir.stat().st_mtime - 1000,
+            "projects": [],
+        }
+        write_discovery_cache(data)
+        assert cache_is_stale(str(projects_dir)) is True
+
+    def test_cache_stale_when_mtime_not_recorded(self, cache_dir, tmp_path):
+        projects_dir = tmp_path / "projects"
+        projects_dir.mkdir()
+        data = {
+            "version": 1,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "projects_dir": str(projects_dir),
+            "projects": [],
+        }
+        write_discovery_cache(data)
+        assert cache_is_stale(str(projects_dir)) is True
 
 
 class TestLastUsed:

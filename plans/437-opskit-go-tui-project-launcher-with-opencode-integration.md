@@ -145,7 +145,7 @@ Every opskit command checks for `~/.opskit/` at startup. If it doesn't exist or 
   "version": 1,
   "entries": [
     {
-      "project_path": "/home/netyeti/Projects/Phoenix",
+      "project_path": "/home/<user>/Projects/Phoenix",
       "timestamp": "2026-10-11T14:30:00"
     }
   ]
@@ -236,14 +236,5 @@ If a directory contains `.git/` but no `pack.yml`:
 - TUI is fast (< 1s for 12 projects)
 - Lazy skill loading keeps opencode lean
 - Secrets passthru is extensible for future engines
-
-**IMPORTANT: After merging, restore stashed changes from main:**
-
-```bash
-# Back on main (the primary checkout):
-cd ~/Projects/opskit && git stash pop
-```
-
-These are pre-existing changes that were stashed before creating this worktree.
 
 ## Ready for review

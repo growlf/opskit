@@ -13,7 +13,6 @@ Uses opskit._cache for atomic cache operations.
 """
 
 import argparse
-import json
 import subprocess
 import sys
 import yaml
@@ -26,39 +25,12 @@ _OPSKIT_ROOT = _SCRIPT_DIR.parent
 sys.path.insert(0, str(_OPSKIT_ROOT))
 
 from opskit._cache import (
-    CACHE_DIR,
     read_discovery_cache,
     write_discovery_cache,
-    cache_is_stale,
+    read_config,
+    write_config,
+    get_projects_dir,
 )
-
-CONFIG_FILE = CACHE_DIR / "config.yml"
-DEFAULT_PROJECTS_DIR = Path.home() / "Projects"
-
-
-# ── Config helpers ───────────────────────────────────────────────────────────
-
-def read_config():
-    """Read ~/.opskit/config.yml. Returns dict with defaults."""
-    if not CONFIG_FILE.exists():
-        return {"projects_dir": str(DEFAULT_PROJECTS_DIR)}
-    with open(CONFIG_FILE, "r") as f:
-        data = yaml.safe_load(f) or {}
-    data.setdefault("projects_dir", str(DEFAULT_PROJECTS_DIR))
-    return data
-
-
-def write_config(data: dict):
-    """Write ~/.opskit/config.yml."""
-    import os as _os
-    from opskit._cache import _ensure_cache_dir, _atomic_write
-    _ensure_cache_dir()
-    _atomic_write(CONFIG_FILE, yaml.dump(data, default_flow_style=False))
-
-
-def get_projects_dir():
-    """Get the configured projects_dir path."""
-    return read_config().get("projects_dir", str(DEFAULT_PROJECTS_DIR))
 
 
 # ── Scan helpers ─────────────────────────────────────────────────────────────
@@ -153,6 +125,24 @@ def _analyze_project(entry: Path, git_dir: Path, pack_file: Path):
     }
 
 
+def _projects_dir_mtime(projects_dir: str):
+    """mtime of projects_dir (float), or None if it can't be stat'd."""
+    try:
+        return Path(projects_dir).resolve().stat().st_mtime
+    except OSError:
+        return None
+
+
+def _build_cache(projects_dir: str, projects: list) -> dict:
+    return {
+        "version": 1,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "projects_dir": projects_dir,
+        "projects_dir_mtime": _projects_dir_mtime(projects_dir),
+        "projects": projects,
+    }
+
+
 # ── Subcommands ──────────────────────────────────────────────────────────────
 
 def cmd_rescan(args):
@@ -161,16 +151,8 @@ def cmd_rescan(args):
     print(f"Scanning projects in: {projects_dir}")
 
     projects = scan_project_dir(projects_dir)
-    now = datetime.now(timezone.utc).isoformat()
+    write_discovery_cache(_build_cache(projects_dir, projects))
 
-    cache = {
-        "version": 1,
-        "timestamp": now,
-        "projects_dir": projects_dir,
-        "projects": projects,
-    }
-
-    write_discovery_cache(cache)
     print(f"Found {len(projects)} project(s)")
     for proj in projects:
         status = "[resume]" if proj.get("has_resume") else ""
@@ -185,7 +167,7 @@ def cmd_add(args):
         sys.exit(1)
 
     projects_dir = get_projects_dir()
-    if not str(project_path).startswith(str(Path(projects_dir).resolve())):
+    if not project_path.is_relative_to(Path(projects_dir).resolve()):
         print(f"Warning: path is outside projects_dir ({projects_dir})", file=sys.stderr)
 
     # Scan the single project
@@ -200,14 +182,7 @@ def cmd_add(args):
     new_proj = _analyze_project(project_path, git_dir, pack_file)
     if new_proj and new_proj["path"] not in existing_paths:
         projects.append(new_proj)
-        now = datetime.now(timezone.utc).isoformat()
-        cache = {
-            "version": 1,
-            "timestamp": now,
-            "projects_dir": projects_dir,
-            "projects": projects,
-        }
-        write_discovery_cache(cache)
+        write_discovery_cache(_build_cache(projects_dir, projects))
         print(f"Added: {new_proj['name']} ({new_proj['path']})")
     elif new_proj:
         print(f"Already in cache: {new_proj['name']}")

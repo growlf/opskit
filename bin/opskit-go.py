@@ -26,11 +26,9 @@ Launch sequence:
 """
 
 import argparse
-import json
 import os
 import subprocess
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
@@ -38,43 +36,22 @@ _OPSKIT_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(_OPSKIT_ROOT))
 
 from opskit._cache import (
-    CACHE_DIR,
     read_discovery_projects,
-    read_last_used,
+    cache_is_stale,
     get_last_used_order,
-    get_sort_key,
     update_last_used,
+    get_projects_dir,
 )
 
 
-def get_projects_dir():
-    """Get the configured projects_dir path (delegates to projects module)."""
-    try:
-        from opskit._cache import CACHE_DIR
-        import yaml
-        config_file = CACHE_DIR / "config.yml"
-        if config_file.exists():
-            with open(config_file, "r") as f:
-                data = yaml.safe_load(f) or {}
-            return data.get("projects_dir", str(Path.home() / "Projects"))
-    except Exception:
-        pass
-    return str(Path.home() / "Projects")
-
-
-def get_projects_dir():
-    """Get the configured projects_dir path (delegates to projects module)."""
-    try:
-        from opskit._cache import CACHE_DIR
-        import yaml
-        config_file = CACHE_DIR / "config.yml"
-        if config_file.exists():
-            with open(config_file, "r") as f:
-                data = yaml.safe_load(f) or {}
-            return data.get("projects_dir", str(Path.home() / "Projects"))
-    except Exception:
-        pass
-    return str(Path.home() / "Projects")
+def ensure_cache():
+    """Rescan the projects dir if the cache is missing or stale."""
+    projects_dir = get_projects_dir()
+    if not read_discovery_projects() or cache_is_stale(projects_dir):
+        subprocess.run(
+            [sys.executable, str(SCRIPT_DIR / "opskit-projects.py"), "rescan"],
+            capture_output=True, text=True,
+        )
 
 
 def sort_projects_by_last_used(projects):
@@ -227,7 +204,8 @@ def main():
 
     args = parser.parse_args()
 
-    # Get projects from cache
+    # Cache-first: rescan only when the cache is missing or stale.
+    ensure_cache()
     projects = read_discovery_projects()
     if not projects:
         print("No projects cached. Run: opskit projects rescan")

@@ -18,7 +18,6 @@ Error: prints to stderr and exits 1 if resolution fails.
 """
 
 import argparse
-import json
 import os
 import subprocess
 import sys
@@ -74,36 +73,36 @@ def _resolve_engine(project_path: str = None):
 
 
 def resolve_bitwarden_session():
-    """Resolve BW_SESSION via bwunlock.sh.
+    """Resolve the vault session token.
 
-    Calls ~/Projects/opskit/bin/bwunlock.sh and reads the session token
-    from the output or ~/.cache/opskit/bw-session.
+    Delegates to bin/bw_session.py — the single source of truth for the
+    env-wins rule, the session file path and the permission check (#155/#378).
+    bin/bwunlock.sh (default mode) is called first to refresh a stale/absent
+    session; it never prints the token, only writes the cache file.
+    Returns '' when no usable session is available (non-fatal).
     """
-    bwunlock_sh = _OPSKIT_ROOT / "bin" / "bwunlock.sh"
-    bw_session_file = Path.home() / ".cache" / "opskit" / "bw-session"
+    bwunlock_sh = _OPSKIT_ROOT / 'bin' / 'bwunlock.sh'
+    bw_session_py = _OPSKIT_ROOT / 'bin' / 'bw_session.py'
 
-    # Try bwunlock.sh first
     if bwunlock_sh.exists():
         try:
-            result = subprocess.run(
-                ["bash", str(bwunlock_sh), "--check"],
-                capture_output=True, text=True, timeout=30,
-            )
-            # bwunlock.sh outputs "vault session usable: unlocked (from <source>)" on success
-            if result.returncode == 0 and "unlocked" in result.stdout:
-                # Session is already valid — read from the session file
-                pass
+            subprocess.run(['bash', str(bwunlock_sh)],
+                           capture_output=True, text=True, timeout=60)
         except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
             pass
 
-    # Read session token from file
-    if bw_session_file.exists():
-        try:
-            return bw_session_file.read_text().strip()
-        except Exception:
-            pass
+    try:
+        result = subprocess.run(
+            [sys.executable, str(bw_session_py), '--token'],
+            capture_output=True, text=True, timeout=15,
+        )
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        pass
 
-    return ""
+    # Fall back to an explicitly exported token if the resolver is unavailable.
+    return os.environ.get('BW_SESSION', '')
 
 
 def resolve_env_secret(config_key: str = None):

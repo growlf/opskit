@@ -17,7 +17,6 @@ or git rev-parse).
 
 import argparse
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -187,35 +186,49 @@ def cmd_verify(args):
     print(f"Summary: {ok_count} OK, {fail_count} FAIL")
 
 
+def _is_opskit_link(target: Path, skill_name: str) -> bool:
+    """True only if target is a symlink resolving to this skill in SKILLS_SOURCE.
+
+    Guards cleanup: never remove a symlink the user created that merely happens
+    to share a skill's name.
+    """
+    if not target.is_symlink():
+        return False
+    try:
+        return target.resolve() == (SKILLS_SOURCE / skill_name).resolve()
+    except OSError:
+        return False
+
+
 def cmd_cleanup(args):
-    """Remove opskit-managed symlinks."""
+    """Remove opskit-managed symlinks (those pointing into SKILLS_SOURCE)."""
     skills = _get_skills()
     if not skills:
         print("No skills found in source directory")
         return
 
     removed = 0
+    skipped = 0
 
     print(f"Removing opskit symlinks...")
     print()
 
     for skill_name in skills:
-        # Remove opencode symlink
-        opencode_target = OPENCODE_SKILLS_DIR / skill_name
-        if opencode_target.is_symlink():
-            opencode_target.unlink()
-            print(f"  removed: {skill_name} (opencode)")
-            removed += 1
-
-        # Remove agents symlink
-        agents_target = AGENTS_SKILLS_DIR / skill_name
-        if agents_target.is_symlink():
-            agents_target.unlink()
-            print(f"  removed: {skill_name} (agents)")
-            removed += 1
+        for label, target_dir in (("opencode", OPENCODE_SKILLS_DIR),
+                                  ("agents", AGENTS_SKILLS_DIR)):
+            target = target_dir / skill_name
+            if not target.is_symlink():
+                continue
+            if _is_opskit_link(target, skill_name):
+                target.unlink()
+                print(f"  removed: {skill_name} ({label})")
+                removed += 1
+            else:
+                print(f"  skipped: {skill_name} ({label}) — not an opskit symlink")
+                skipped += 1
 
     print()
-    print(f"Removed {removed} symlink(s)")
+    print(f"Removed {removed} symlink(s)" + (f", skipped {skipped}" if skipped else ""))
 
 
 def main():

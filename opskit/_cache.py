@@ -12,10 +12,8 @@ safety. All scripts (go.py, projects.py, etc.) import from this module.
 
 import json
 import os
-import shutil
 import stat
 import tempfile
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -27,8 +25,34 @@ CACHE_DIR_MODE = 0o700
 FILE_MODE = 0o600
 LAST_DISCOVERY_FILE = CACHE_DIR / "last-discovery.json"
 LAST_USED_FILE = CACHE_DIR / "last-used.json"
+CONFIG_FILE = CACHE_DIR / "config.yml"
+DEFAULT_PROJECTS_DIR = Path.home() / "Projects"
 MAX_LAST_USED_ENTRIES = 100
 CACHE_STALE_HOURS = 24
+
+
+# ── Config (single definition — go.py and projects.py both import these) ─────
+
+def read_config() -> dict:
+    """Read ~/.opskit/config.yml. Returns dict with defaults."""
+    import yaml
+    data = {}
+    if CONFIG_FILE.exists():
+        with open(CONFIG_FILE, "r") as f:
+            data = yaml.safe_load(f) or {}
+    data.setdefault("projects_dir", str(DEFAULT_PROJECTS_DIR))
+    return data
+
+
+def write_config(data: dict):
+    """Write ~/.opskit/config.yml atomically."""
+    import yaml
+    _atomic_write(CONFIG_FILE, yaml.dump(data, default_flow_style=False))
+
+
+def get_projects_dir() -> str:
+    """Get the configured projects_dir path."""
+    return read_config().get("projects_dir", str(DEFAULT_PROJECTS_DIR))
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -95,9 +119,9 @@ def cache_is_stale(projects_dir: str) -> bool:
     """Check if the discovery cache is stale.
 
     Cache is stale if:
-    - File doesn't exist
+    - File doesn't exist or is unreadable
     - Older than CACHE_STALE_HOURS
-    - projects_dir mtime has changed since cache was written
+    - projects_dir mtime differs from the value recorded at scan time
     """
     if not LAST_DISCOVERY_FILE.exists():
         return True
@@ -108,31 +132,22 @@ def cache_is_stale(projects_dir: str) -> bool:
 
     cache_timestamp = cache.get("timestamp", "")
     try:
-        cache_time = datetime.fromisoformat(cache_timestamp).replace(tzinfo=timezone.utc)
-        now = datetime.now(timezone.utc)
-        if (now - cache_time).total_seconds() > CACHE_STALE_HOURS * 3600:
+        cache_time = datetime.fromisoformat(cache_timestamp)
+        if cache_time.tzinfo is None:
+            cache_time = cache_time.replace(tzinfo=timezone.utc)
+        if (datetime.now(timezone.utc) - cache_time).total_seconds() > CACHE_STALE_HOURS * 3600:
             return True
     except (ValueError, TypeError):
         return True
 
-    # Check if projects_dir mtime has changed
+    # projects_dir mtime changed since the cache was written → new/removed entries.
     try:
-        projects_dir_path = Path(projects_dir).resolve()
-        if projects_dir_path.exists():
-            dir_mtime = projects_dir_path.stat().st_mtime
-            # Compare with cache write time (approximate via timestamp)
-            dir_mtime_dt = datetime.fromtimestamp(dir_mtime, tz=timezone.utc)
-            if abs((now - dir_mtime_dt).total_seconds()) < 60:
-                # Directory was modified very recently — treat as stale
-                # to avoid missing new projects
-                pass
-            else:
-                # Check if we can detect staleness via mtime comparison
-                # We store the projects_dir path, not its mtime, so we
-                # check the current mtime against a stored one
-                pass
+        current_mtime = Path(projects_dir).resolve().stat().st_mtime
     except OSError:
-        pass
+        return True
+    stored_mtime = cache.get("projects_dir_mtime")
+    if stored_mtime is None or abs(current_mtime - float(stored_mtime)) > 1e-6:
+        return True
 
     return False
 
