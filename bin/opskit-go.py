@@ -180,6 +180,50 @@ def _git_info(path):
         return "unknown", "unknown"
 
 
+PICKER_NAME_W = 28
+PICKER_BRANCH_W = 18
+PICKER_STATUS_W = 8
+
+
+def _pad(value, width):
+    """Left-justify to a fixed width, truncating long values with an ellipsis."""
+    if len(value) > width:
+        value = value[: width - 1] + "…"
+    return f"{value:<{width}}"
+
+
+def _picker_header():
+    return (
+        f"{'NAME':<{PICKER_NAME_W}} {'BRANCH':<{PICKER_BRANCH_W}} "
+        f"{'STATUS':<{PICKER_STATUS_W}} RESUME"
+    )
+
+
+def _picker_row(proj, git_lookup):
+    """One fixed-width display row: NAME | BRANCH | STATUS | RESUME."""
+    name = proj.get("rel") or proj.get("name", "unknown")
+    path = proj.get("path", "")
+    branch, status = git_lookup(path) if path else ("unknown", "unknown")
+    resume = "[resume]" if proj.get("has_resume") else ""
+    return (
+        f"{_pad(name, PICKER_NAME_W)} {_pad(branch, PICKER_BRANCH_W)} "
+        f"{_pad(status, PICKER_STATUS_W)} {resume}"
+    ).rstrip()
+
+
+def build_picker(projects, git_lookup=_git_info):
+    """Return (header, lines) for the fzf picker.
+
+    Each line is ``"<path>\\t<display>"``: field 1 is the selection value
+    (returned via fzf ``--accept-nth=1``), field 2 is the aligned display.
+    """
+    lines = [
+        f"{proj.get('path', '')}\t{_picker_row(proj, git_lookup)}"
+        for proj in projects
+    ]
+    return _picker_header(), lines
+
+
 def display_project_info(proj):
     """Display project info for the confirmation screen."""
     lines = []
@@ -256,39 +300,43 @@ def launch_project(project_path):
 
 
 def run_fzf_selection(projects):
-    """Run fzf to let the user select a project. Returns selected path or None."""
-    # Build fzf input: tab-separated name and path, sorted by last-used
-    lines = []
-    for proj in projects:
-        name = proj.get("rel") or proj.get("name", "unknown")
-        path = proj.get("path", "")
-        # Use path as the selection value
-        lines.append(f"{name}\t{path}")
+    """Run fzf to let the user select a project. Returns selected path or None.
 
-    input_data = "\n".join(lines) + "\n"
+    No timeout: this is an interactive picker, not a batch call. Esc/Ctrl+C
+    cancels (nonzero fzf exit) and returns None.
+    """
+    header, lines = build_picker(projects)
+    input_data = "\n".join(lines) + "\n" if lines else ""
 
     try:
         fzf_proc = subprocess.run(
-            ["fzf", "--height=40%", "--reverse", "--prompt=opskit> "],
+            [
+                "fzf",
+                "--height=40%",
+                "--reverse",
+                "--prompt=opskit> ",
+                "--delimiter=\t",
+                "--with-nth=2",   # display the aligned columns (field 2)
+                "--accept-nth=1",  # return only the path (field 1)
+                f"--header={header}",
+            ],
             input=input_data,
-            capture_output=True, text=True, timeout=60,
+            capture_output=True,
+            text=True,
         )
-        if fzf_proc.returncode != 0:
-            return None  # User cancelled
-
-        selected = fzf_proc.stdout.strip()
-        if not selected:
-            return None
-
-        # Extract path from tab-separated line
-        parts = selected.split("\t")
-        if len(parts) >= 2:
-            return parts[1]
-        return selected
-
-    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
-        print("Error: fzf not found or timed out", file=sys.stderr)
+    except (FileNotFoundError, OSError):
+        print("Error: fzf not found", file=sys.stderr)
         sys.exit(1)
+
+    if fzf_proc.returncode != 0:
+        return None  # User cancelled (Esc/Ctrl+C)
+
+    selected = fzf_proc.stdout.strip()
+    if not selected:
+        return None
+    # --accept-nth=1 yields the path; split anyway so we still work if a
+    # build ignores --accept-nth and returns the whole line.
+    return selected.split("\t")[0]
 
 
 def main():
