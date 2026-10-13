@@ -75,3 +75,27 @@ class TestFuzzyMatch:
     def test_empty_projects_list(self):
         matches = fuzzy_match_projects("anything", [])
         assert len(matches) == 0
+
+
+class TestFuzzySubsequence:
+    """Subsequence matching over name / basename / nested rel path."""
+
+    def test_noncontiguous_subsequence(self):
+        projects = [{"name": "nested-app", "path": "/p/group/nested-app"}]
+        assert len(fuzzy_match_projects("neap", projects)) == 1
+
+    def test_matches_nested_rel_path(self):
+        projects = [
+            {"name": "nested-app", "path": "/p/group/nested-app", "rel": "group/nested-app"}
+        ]
+        assert len(fuzzy_match_projects("group", projects)) == 1
+
+    def test_matches_nested_query_form(self):
+        projects = [
+            {"name": "nested-app", "path": "/p/group/nested-app", "rel": "group/nested-app"}
+        ]
+        assert len(fuzzy_match_projects("group/nested", projects)) == 1
+
+    def test_rejects_non_subsequence(self):
+        projects = [{"name": "Phoenix", "path": "/p/Phoenix"}]
+        assert len(fuzzy_match_projects("xyz", projects)) == 0

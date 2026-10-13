@@ -26,6 +26,7 @@ Launch sequence:
 """
 
 import argparse
+import difflib
 import os
 import subprocess
 import sys
@@ -36,11 +37,13 @@ _OPSKIT_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(_OPSKIT_ROOT))
 
 from opskit._cache import (
+    CONFIG_FILE,
     read_discovery_projects,
     cache_is_stale,
     get_last_used_order,
     update_last_used,
     get_projects_dir,
+    get_projects,
 )
 
 
@@ -54,38 +57,127 @@ def ensure_cache():
         )
 
 
+def ensure_enabled():
+    """Guarantee a non-empty enabled list; offer to bootstrap on first run."""
+    if get_projects():
+        return True
+
+    if not sys.stdin.isatty():
+        print(
+            "No projects enabled. Run 'opskit projects bootstrap' or "
+            "'opskit projects add <path>'.",
+            file=sys.stderr,
+        )
+        return False
+
+    print(f"No projects enabled in {CONFIG_FILE}.")
+    try:
+        answer = input(
+            f"Scan {get_projects_dir()} for OpsKit projects (.opskit/pack.yml) "
+            "and enable them? [y/N] "
+        )
+    except EOFError:
+        return False
+
+    if answer.strip().lower() not in ("y", "yes"):
+        print("Nothing enabled. Add projects with 'opskit projects add <path>'.")
+        return False
+
+    subprocess.run(
+        [sys.executable, str(SCRIPT_DIR / "opskit-projects.py"), "bootstrap"],
+        check=False,
+    )
+    return bool(get_projects())
+
+
 def sort_projects_by_last_used(projects):
     """Sort projects by last-used timestamp (most recent first)."""
     project_map = {p["path"]: p for p in projects}
-    last_used_order = get_last_used_order()
 
-    # Projects in last-used order first, then uncached projects
     sorted_projects = []
-    for path in last_used_order:
-        if path in project_map:
+    seen = set()
+    for path in get_last_used_order():
+        if path in project_map and path not in seen:
             sorted_projects.append(project_map[path])
+            seen.add(path)
 
-    # Add any projects not in last-used
+    # Append projects not present in the last-used cache.
     for proj in projects:
-        if proj["path"] not in project_map or proj not in sorted_projects:
+        if proj["path"] not in seen:
             sorted_projects.append(proj)
+            seen.add(proj["path"])
 
     return sorted_projects
 
 
-def fuzzy_match_projects(name, projects):
-    """Fuzzy match a project name against the project list.
+def _subsequence_score(query, target):
+    """Score query as a subsequence of target, or None if it isn't one.
 
-    Returns a list of matching project dicts.
+    Rewards consecutive runs and word-boundary hits (fzf-style) so that
+    'group' prefers 'group/nested-app' over an incidental scatter of letters.
     """
-    name_lower = name.lower()
-    matches = []
+    qi = 0
+    score = 0
+    last = -2
+    for i, ch in enumerate(target):
+        if qi < len(query) and ch == query[qi]:
+            score += 1
+            if last == i - 1:
+                score += 2
+            if i == 0 or target[i - 1] in "/-_. ":
+                score += 3
+            last = i
+            qi += 1
+            if qi == len(query):
+                return score
+    return None
+
+
+def _project_targets(proj):
+    return [
+        proj.get("name", "").lower(),
+        Path(proj.get("path", "")).name.lower(),
+        (proj.get("rel", "") or "").lower(),
+    ]
+
+
+def fuzzy_match_projects(name, projects):
+    """Fuzzy (subsequence) match a query against name / basename / rel path.
+
+    Returns matching project dicts, best score first.
+    """
+    query = name.strip().lower()
+    if not query:
+        return []
+
+    scored = []
     for proj in projects:
-        proj_name = proj.get("name", "").lower()
-        proj_path = proj.get("path", "").lower()
-        if name_lower in proj_name or name_lower in proj_path:
-            matches.append(proj)
-    return matches
+        best = None
+        for target in _project_targets(proj):
+            s = _subsequence_score(query, target)
+            if s is not None and (best is None or s > best):
+                best = s
+        if best is not None:
+            scored.append((best, proj))
+
+    scored.sort(key=lambda item: item[0], reverse=True)
+    return [proj for _, proj in scored]
+
+
+def _git_info(path):
+    """(branch, status) computed on demand — the scan never shells out to git."""
+    try:
+        branch = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=path, capture_output=True, text=True, timeout=10,
+        ).stdout.strip() or "detached"
+        status = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=path, capture_output=True, text=True, timeout=10,
+        )
+        return branch, ("dirty" if status.stdout.strip() else "clean")
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        return "unknown", "unknown"
 
 
 def display_project_info(proj):
@@ -99,7 +191,8 @@ def display_project_info(proj):
     if proj.get("description"):
         lines.append(f"Description: {proj['description']}")
     lines.append(f"Classification: {proj.get('classification', 'unknown')}")
-    lines.append(f"Git: {proj.get('git_branch', '?')} ({proj.get('git_status', '?')})")
+    branch, status = _git_info(proj.get("path", ""))
+    lines.append(f"Git: {branch} ({status})")
 
     if proj.get("has_resume"):
         lines.append("Resume: has RESUME.md")
@@ -167,7 +260,7 @@ def run_fzf_selection(projects):
     # Build fzf input: tab-separated name and path, sorted by last-used
     lines = []
     for proj in projects:
-        name = proj.get("name", "unknown")
+        name = proj.get("rel") or proj.get("name", "unknown")
         path = proj.get("path", "")
         # Use path as the selection value
         lines.append(f"{name}\t{path}")
@@ -176,7 +269,7 @@ def run_fzf_selection(projects):
 
     try:
         fzf_proc = subprocess.run(
-            ["fzf"],
+            ["fzf", "--height=40%", "--reverse", "--prompt=opskit> "],
             input=input_data,
             capture_output=True, text=True, timeout=60,
         )
@@ -204,11 +297,15 @@ def main():
 
     args = parser.parse_args()
 
+    # First run with no enabled projects: offer to scan for OpsKit members.
+    if not ensure_enabled():
+        sys.exit(0)
+
     # Cache-first: rescan only when the cache is missing or stale.
     ensure_cache()
     projects = read_discovery_projects()
     if not projects:
-        print("No projects cached. Run: opskit projects rescan")
+        print("No projects found. Run: opskit projects rescan")
         sys.exit(1)
 
     # Sort by last-used
@@ -220,7 +317,9 @@ def main():
         for proj in projects:
             proj_name = proj.get("name", "")
             proj_path = proj.get("path", "")
-            if proj_name == args.project or proj_path == args.project or proj_path.endswith(args.project):
+            proj_rel = proj.get("rel", "")
+            if (proj_name == args.project or proj_rel == args.project
+                    or proj_path == args.project or proj_path.endswith(args.project)):
                 exact_match = proj
                 break
 
@@ -243,9 +342,13 @@ def main():
                     sys.exit(0)
             else:
                 print(f"No project matches '{args.project}'", file=sys.stderr)
+                names = [p.get("name", "") for p in projects]
+                close = difflib.get_close_matches(args.project, names, n=5, cutoff=0.3)
+                if not close:
+                    close = names[:5]
                 print("Suggestions:", file=sys.stderr)
-                for proj in projects[:5]:
-                    print(f"  {proj.get('name', 'unknown')}", file=sys.stderr)
+                for suggestion in close:
+                    print(f"  {suggestion}", file=sys.stderr)
                 sys.exit(1)
     else:
         # No project specified — show TUI

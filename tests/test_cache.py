@@ -41,6 +41,7 @@ def cache_dir(tmp_path, monkeypatch):
     monkeypatch.setattr("opskit._cache.CACHE_DIR", test_cache)
     monkeypatch.setattr("opskit._cache.LAST_DISCOVERY_FILE", test_cache / "last-discovery.json")
     monkeypatch.setattr("opskit._cache.LAST_USED_FILE", test_cache / "last-used.json")
+    monkeypatch.setattr("opskit._cache.CONFIG_FILE", test_cache / "config.yml")
     return test_cache
 
 
@@ -217,6 +218,43 @@ class TestLastUsed:
         key = get_sort_key("/tmp/project1")
         assert key  # Should return a timestamp string
         assert get_sort_key("/tmp/nonexistent") == ""
+
+
+class TestConfig:
+    """Test ~/.opskit/config.yml project allow-list handling."""
+
+    def test_default_projects_empty(self, cache_dir):
+        from opskit import _cache
+        assert _cache.read_config().get("projects") == []
+        assert _cache.get_projects() == []
+
+    def test_projects_round_trip(self, cache_dir):
+        from opskit import _cache
+        _cache.write_config({"projects_dir": "/tmp/p", "projects": ["A", "group/x"]})
+        assert _cache.get_projects() == ["A", "group/x"]
+
+    def test_null_projects_normalised_to_empty(self, cache_dir):
+        from opskit import _cache
+        (cache_dir / "config.yml").write_text("projects_dir: /tmp/p\nprojects:\n")
+        assert _cache.get_projects() == []
+
+    def test_cache_stale_when_config_newer(self, cache_dir, tmp_path):
+        projects_dir = tmp_path / "projects"
+        projects_dir.mkdir()
+        data = {
+            "version": 1,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "projects_dir": str(projects_dir),
+            "projects_dir_mtime": projects_dir.stat().st_mtime,
+            "projects": [],
+        }
+        write_discovery_cache(data)
+        assert cache_is_stale(str(projects_dir)) is False
+        cfg = cache_dir / "config.yml"
+        cfg.write_text("projects_dir: /tmp/x\n")
+        future = time.time() + 10
+        os.utime(cfg, (future, future))
+        assert cache_is_stale(str(projects_dir)) is True
 
 
 class TestGetProjectFromCache:
