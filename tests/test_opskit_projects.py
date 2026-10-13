@@ -1,14 +1,28 @@
 """Tests for opskit-projects.py — project cache management."""
 
-import pytest
-
+import subprocess
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-sys.path.insert(0, str(Path(__file__).parent.parent / "opskit"))
 
-from test_projects import TestDiscoveryCache
+import pytest
 
-class TestProjectsCache(TestDiscoveryCache):
-    """Test project cache."""
-    pass
+
+class TestOpskitProjects:
+    """Test opskit-projects.py script."""
+
+    def test_script_help(self):
+        result = subprocess.run(
+            [sys.executable, str(Path(__file__).parent.parent / "bin" / "opskit-projects.py"), "--help"],
+            capture_output=True, text=True, timeout=10,
+        )
+        assert result.returncode == 0
+        assert "rescan" in result.stdout
+
+    def test_script_exists(self):
+        script = Path(__file__).parent.parent / "bin" / "opskit-projects.py"
+        assert script.exists()
+
+    def test_script_compiles(self):
+        script = Path(__file__).parent.parent / "bin" / "opskit-projects.py"
+        content = script.read_text()
+        compile(content, str(script), "exec")
