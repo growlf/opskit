@@ -1,6 +1,8 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": ["AGENTS.md"],
+  "instructions": [
+    "AGENTS.md"
+  ],
   "tools": {
     "mikromcp_*": false,
     "github_*": false,
@@ -8,5 +10,11 @@
     "technitium_*": false,
     "proxmox_*": false,
     "bitwarden_*": false
+  },
+  "references": {
+    "opskit": {
+      "path": "/home/netyeti/Projects/opskit",
+      "description": "OpsKit \u2014 infrastructure toolkit, subagents, MCP servers, skills"
+    }
   }
 }

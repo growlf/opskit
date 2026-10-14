@@ -762,7 +762,7 @@ _opskit() {{
               dns:'resolve and query DNS via the technitium MCP tools'
               setup-completion:'install tab completion'
               go:'launch opencode in an opskit project (TUI)'
-              web:'launch opencode web --mdns'
+              web:'launch opencode pair (web UI pairing links)'
               skills:'manage opskit skill symlinks (setup/verify/cleanup)'
               projects:'manage project cache (rescan/list/add/config)')
     _describe 'command' commands
@@ -1854,7 +1854,7 @@ Without Semaphore, playbooks run via the CLI with  bin/ap.sh <playbook>.
     # only; dispatch is intercepted in main() before argparse runs.
     for _name, _help in (
         ('go', 'launch opencode in an opskit project (TUI)'),
-        ('web', 'launch opencode web --mdns'),
+        ('web', 'launch opencode pair (web UI pairing links)'),
         ('skills', 'manage opskit skill symlinks (setup/verify/cleanup)'),
         ('projects', 'manage project cache (rescan/list/add/config)'),
     ):
