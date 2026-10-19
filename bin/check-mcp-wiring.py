@@ -14,7 +14,11 @@ Verdicts per configured MCP entry naming a shipped server:
           in-repo server: a duplicate implementation exists. Exit 0.
 
 Entries for servers this repo does not ship (other projects' MCP servers,
-external services) are none of our business and never flagged.
+external services) are normally none of our business. However, if such an
+entry uses a package runner (npx/uvx/pipx) AND is NOT declared in
+mcp/external-servers.json, this reporter flags a WARN suggesting that
+addition — so the launcher can resolve vault sessions for it (e.g. the
+bitwarden MCP server).
 
 Usage:
   bin/check-mcp-wiring.py [--config PATH]
@@ -48,6 +52,17 @@ def shipped_servers(repo: Path) -> set[str]:
     return names
 
 
+def external_server_names(repo: Path) -> set[str]:
+    """Names registered in mcp/external-servers.json."""
+    ext_map = repo / 'mcp' / 'external-servers.json'
+    if not ext_map.exists():
+        return set()
+    try:
+        return set(json.loads(ext_map.read_text())) - {k for k in json.loads(ext_map.read_text()) if k.startswith('_')}
+    except Exception:
+        return set()
+
+
 def command_text(entry) -> str:
     """opencode accepts a string or argv list for an MCP server command."""
     cmd = entry.get('command') if isinstance(entry, dict) else None
@@ -59,6 +74,7 @@ def command_text(entry) -> str:
 def check(config: dict, repo: Path) -> tuple[list[str], list[str]]:
     """Returns (errors, warnings)."""
     servers = shipped_servers(repo)
+    ext_names = external_server_names(repo)
     errors, warnings = [], []
 
     for name, entry in (config.get('mcp') or {}).items():
@@ -88,6 +104,48 @@ def check(config: dict, repo: Path) -> tuple[list[str], list[str]]:
             warnings.append(
                 f"{name}: shipped server '{hit}' wired as '{cmd}' — "
                 f"not this repo's launcher; verify intentional")
+
+    # Verify external-servers.json entries are actually routed through
+    # mcp-run.sh in opencode.json (not via a bare package runner).
+    # This catches the class of defect where a server is declared in the
+    # catalog but opencode.json launches it directly, bypassing the session
+    # resolver (opskit #386 — the bitwarden MCP server).
+    run_sh = f'{repo}/bin/mcp-run.sh'
+    for name in ext_names:
+        if name in servers:
+            continue  # shipped server, handled above
+        entry = config.get('mcp', {}).get(name)
+        if not entry:
+            continue
+        cmd = command_text(entry)
+        if not cmd:
+            continue
+        first = cmd.split()[0] if cmd.split() else ''
+        if os.path.basename(first) in PACKAGE_RUNNERS and run_sh not in cmd:
+            ext_map_rel = str((repo / 'mcp' / 'external-servers.json').relative_to(repo.parent))
+            warnings.append(
+                f"{name}: declared in {ext_map_rel} but opencode routes via "
+                f"package runner ({first}) instead of bin/mcp-run.sh {name} — "
+                f"the launcher will resolve vault sessions for this server")
+
+    # For non-shipped servers using a package runner that are also not in
+    # external-servers.json, suggest adding the entry so the launcher can
+    # handle vault sessions.
+    for name, entry in (config.get('mcp') or {}).items():
+        cmd = command_text(entry)
+        if not cmd:
+            continue
+        first = cmd.split()[0] if cmd.split() else ''
+        if os.path.basename(first) not in PACKAGE_RUNNERS:
+            continue
+        if name in servers or name in ext_names:
+            continue  # already handled or known
+        ext_map_rel = str((repo / 'mcp' / 'external-servers.json').relative_to(repo.parent))
+        warnings.append(
+            f"{name}: uses package runner ({first}) but is not declared in "
+            f"{ext_map_rel}; if this server needs vault-session support, "
+            f"add it to mcp/external-servers.json so bin/mcp-run.sh can launch it")
+
     return errors, warnings
 
 

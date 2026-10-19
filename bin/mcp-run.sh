@@ -140,6 +140,18 @@ for part in entry.get("command") or []:
 PY
 }
 
+# Whether an external server needs the vault session resolved (e.g. the
+# bitwarden MCP server, which IS the vault client and gets its session
+# from the resolver, not from a vault item).
+external_needs_vault_session() {
+    [ -f "$EXTERNAL_MAP" ] || return 0
+    "$(json_python)" - "$EXTERNAL_MAP" "$1" <<'PY' 2>/dev/null || true
+import json, sys
+entry = json.load(open(sys.argv[1])).get(sys.argv[2]) or {}
+print("1" if entry.get("needs_vault_session") else "0")
+PY
+}
+
 list_servers() {
     {
         find "$MCP_DIR" -maxdepth 1 -name '*-mcp-server.py' -printf '%f\n' 2>/dev/null \
@@ -196,6 +208,12 @@ if [ ! -f "$SERVER_PY" ]; then
     else
         die "no such server '$SERVER' — available: $(list_servers | tr '\n' ' ')"
     fi
+fi
+
+# Extract needs_vault_session flag for external servers.
+NEEDS_VAULT_SESSION=0
+if [ "$SERVER_KIND" = "external" ]; then
+    NEEDS_VAULT_SESSION=$(external_needs_vault_session "$SERVER")
 fi
 
 # ── Launch-path validation (runs in both modes) ───────────────────────────────
@@ -272,6 +290,14 @@ if [ "$NEEDS_SECRETS" = "1" ]; then
     load_session_file
 fi
 
+# External servers with needs_vault_session force session resolution even if
+# their vault-map entry is empty or absent.  This is the path for the bitwarden
+# MCP server — it's the vault client itself, so its session comes from the
+# resolver (bw_session.py), not from a vault item.
+if [ "$SERVER_KIND" = "external" ] && [ "${NEEDS_VAULT_SESSION:-0}" = "1" ]; then
+    NEEDS_SECRETS=1
+fi
+
 if [ "$NEEDS_SECRETS" = "0" ]; then
     report 1 "vault" "not needed — this server declares no secrets"
 elif command -v "$BW" >/dev/null 2>&1; then
@@ -314,8 +340,12 @@ except Exception:
 fi
 
 # Which env vars this server expects, and whether the map covers them.
+# External servers with needs_vault_session get the session from the resolver
+# (BW_SESSION) but have no vault-map entries — skip the entry check for them.
 ENTRIES=""
-if [ -f "$VAULT_MAP" ]; then
+if [ "${NEEDS_VAULT_SESSION:-0}" = "1" ]; then
+    report 1 "session" "external server (resolved from $BW_SESSION_SOURCE)"
+elif [ -f "$VAULT_MAP" ]; then
     ENTRIES=$("$(json_python)" - "$VAULT_MAP" "$SERVER" <<'PY' 2>/dev/null || true
 import json, sys
 raw = json.load(open(sys.argv[1]))
