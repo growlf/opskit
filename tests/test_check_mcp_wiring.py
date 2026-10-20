@@ -35,7 +35,7 @@ def test_shipped_servers_derived_from_repo():
 def test_sibling_checkout_is_error():
     cfg = _cfg({"erpnext": {
         "command": "/home/user/Projects/sibling/scripts/erpnext-mcp-run.sh"}})
-    errors, warnings = cmw.check(cfg, ROOT)
+    errors, warnings, _ = cmw.check(cfg, ROOT)
     assert len(errors) == 1 and not warnings
     assert "OUTSIDE this repo" in errors[0]
 
@@ -43,20 +43,20 @@ def test_sibling_checkout_is_error():
 def test_in_repo_launcher_is_clean():
     cfg = _cfg({"erpnext": {
         "command": f"{ROOT}/bin/mcp-run.sh erpnext"}})
-    errors, warnings = cmw.check(cfg, ROOT)
+    errors, warnings, _ = cmw.check(cfg, ROOT)
     assert not errors and not warnings
 
 
 def test_argv_list_command_form_is_handled():
     cfg = _cfg({"technitium": {
         "command": ["/somewhere/else/technitium-mcp-run.sh"]}})
-    errors, warnings = cmw.check(cfg, ROOT)
+    errors, warnings, _ = cmw.check(cfg, ROOT)
     assert len(errors) == 1
 
 
 def test_package_runner_is_warning_not_error():
     cfg = _cfg({"proxmox": {"command": "uvx proxmox-mcp-plus"}})
-    errors, warnings = cmw.check(cfg, ROOT)
+    errors, warnings, _ = cmw.check(cfg, ROOT)
     assert not errors
     assert len(warnings) == 1 and "package runner" in warnings[0]
 
@@ -64,17 +64,30 @@ def test_package_runner_is_warning_not_error():
 def test_foreign_servers_are_ignored():
     cfg = _cfg({
         "other-project": {"command": "node /elsewhere/dist/mcp/server.js"},
+    })
+    errors, warnings, _ = cmw.check(cfg, ROOT)
+    assert not errors and not warnings
+
+
+def test_declared_external_server_produces_info():
+    """A server declared in external-servers.json but routed via package
+    runner (not mcp-run.sh) gets an INFO note — not a warning, because the
+    catalog is advisory and users may use a different vault solution."""
+    cfg = _cfg({
         "bitwarden": {"command": "npx -y @bitwarden/mcp-server"},
     })
-    errors, warnings = cmw.check(cfg, ROOT)
+    errors, warnings, infos = cmw.check(cfg, ROOT)
     assert not errors and not warnings
+    assert len(infos) == 1
+    assert "bitwarden" in infos[0]
+    assert "declared in" in infos[0]
 
 
 def test_match_via_entry_name_not_just_command():
     """A sibling wrapper whose filename hides the server name still flags
     when the config entry itself is named after the shipped server."""
     cfg = _cfg({"technitium": {"command": "/elsewhere/scripts/dns-run.sh"}})
-    errors, warnings = cmw.check(cfg, ROOT)
+    errors, warnings, _ = cmw.check(cfg, ROOT)
     assert len(errors) == 1
 
 

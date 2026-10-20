@@ -10,9 +10,25 @@
     "command = argv, launched with the vault-resolved secrets in its environment.",
     "install = how to obtain it, for the operator that --check tells to install it.",
     "",
+    "needs_vault_session = when true, mcp-run.sh resolves BW_SESSION via the",
+    "        shared resolver (bw_session.py) before launching.  This is for",
+    "        external servers that ARE the vault client and get their session",
+    "        from the resolver rather than from a vault item (e.g. bitwarden).",
+    "",
     "Keep this file free of environment names, hostnames and vault identifiers",
     "(docs/client-data-policy.md) — those belong in the gitignored layers."
   ],
+  "bitwarden": {
+    "command": ["npx", "-y", "@bitwarden/mcp-server"],
+    "install": "npm install -g @bitwarden/mcp-server",
+    "needs_vault_session": true,
+    "why": [
+      "The Bitwarden MCP server reads its session from BW_SESSION.",
+      "This is the vault client itself, so its session comes from the",
+      "resolver (bw_session.py), not from a vault item. needs_vault_session",
+      "tells mcp-run.sh to resolve and export the session at launch."
+    ]
+  },
   "mikromcp": {
     "command": ["mikromcp", "serve"],
     "install": "npm install -g mikromcp",
