@@ -11,15 +11,12 @@
 #
 # Exit codes:
 #   0  in a valid worktree (non-main branch in a worktree dir)
-#   1  on main branch in the primary checkout (blocked)
+#   1  on main branch in the primary checkout (blocked), or not in a git repository
 #   2  on main branch in a worktree (allowed — worktree branches can be named "main" in theory, but we still warn)
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-
-RED='\033[0;31m'; YELLOW='\033[1;33m'; NC='\033[0m'
+RED='\033[0;31m'; YELLOW='\033[1;33m'; GREEN='\033[0;32m'; NC='\033[0m'
 
 ALLOW_MAIN=0
 while [ $# -gt 0 ]; do
@@ -39,28 +36,28 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-# Determine if we are in the primary checkout
-WORKTREE_LIST="$(git worktree list --porcelain 2>/dev/null || true)"
-PRIMARY_PATH="$(cd "$REPO_ROOT" && pwd)"
-CURRENT_PATH="$(pwd)"
+# Determine whether we are in the primary checkout.
+#
+# Do NOT infer this from paths. The primary checkout is the one directory whose
+# --git-dir IS the common repository; in a linked worktree --git-dir points at
+# <common>/worktrees/<name>, so the two differ. The previous version derived a
+# "primary path" from the script's own location and compared it against each
+# entry of `git worktree list`, which always matched the worktree the user was
+# standing in — so every worktree commit claimed to be the primary checkout
+# (#450).
+if ! GIT_DIR_PATH="$(git rev-parse --absolute-git-dir 2>/dev/null)"; then
+    echo -e "${RED}ERROR: not inside a git repository.${NC}" >&2
+    exit 1
+fi
+GIT_COMMON_DIR_PATH="$(cd "$(git rev-parse --git-common-dir 2>/dev/null)" && pwd)" || {
+    echo -e "${RED}ERROR: cannot resolve the common git directory.${NC}" >&2
+    exit 1
+}
 
-# Check if current directory IS the primary checkout
-IS_PRIMARY=0
-for line in $WORKTREE_LIST; do
-    case "$line" in
-        worktree*)
-            wt_path="${line#worktree }"
-            if [ "$(cd "$wt_path" 2>/dev/null && pwd)" = "$PRIMARY_PATH" ]; then
-                IS_PRIMARY=1
-                break
-            fi
-            ;;
-    esac
-done
-
-if [ $IS_PRIMARY -eq 0 ]; then
-    # Also check by path comparison (worktree list can be unreliable with symlinks)
-    [ "$CURRENT_PATH" = "$PRIMARY_PATH" ] && IS_PRIMARY=1
+if [ "$GIT_DIR_PATH" = "$GIT_COMMON_DIR_PATH" ]; then
+    IS_PRIMARY=1
+else
+    IS_PRIMARY=0
 fi
 
 if [ $IS_PRIMARY -eq 1 ]; then
