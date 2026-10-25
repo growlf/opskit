@@ -77,6 +77,27 @@ def test_command_loads_the_skill_and_takes_arguments():
     assert "$ARGUMENTS" in body, "the command must pass the operator's topic through"
 
 
+def test_command_carries_the_output_contract():
+    """The command body is the only text guaranteed to reach the model.
+
+    Verified 2026-10-25 by capturing the provider request: `opencode run` does
+    not expand slash commands, so on that path the literal text is the whole
+    prompt; on the command path the body is the whole prompt. Either way, if the
+    body loses the format contract, nothing else supplies it — the skill is only
+    read when the model chooses to load it.
+    """
+    _, _, body = _split_frontmatter(COMMAND)
+    for required in (
+        "| Claim | Source | How verified |",
+        "**Confidence:**",
+        "**Unverified:**",
+    ):
+        assert required in body, (
+            f"the command no longer states {required!r}; the three-part answer "
+            "is the deliverable, not a suggestion"
+        )
+
+
 def test_skill_is_registered_in_agents_md():
     assert "`research`" in AGENTS.read_text(), (
         "AGENTS.md is the discovery surface agents read first; an unregistered "
