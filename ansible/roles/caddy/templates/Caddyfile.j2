@@ -46,6 +46,12 @@
 		root * /var/www/html
 		file_server
 	}
+{% elif route.handler is defined and route.handler == "redirect" %}
+{% if route.extra is defined %}
+{% for line in route.extra.split('\n') %}
+	{{ line }}
+{% endfor %}
+{% endif %}
 {% elif route.extra is defined %}
 {% for line in route.extra.split('\n') %}
 	{{ line }}
