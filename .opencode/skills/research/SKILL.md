@@ -20,6 +20,13 @@ you what is true. "Unverified" and "I don't know" are complete answers. A
 confident guess is not, because the operator cannot tell it apart from a sourced
 one.
 
+Every answer carries three parts — prose alone is an **incomplete answer**,
+because the operator cannot audit it:
+
+1. the answer, direct;
+2. an evidence table, one row per load-bearing claim;
+3. confidence, plus an explicit list of what is still unverified.
+
 ## Evidence ladder — cheapest authoritative rung first
 
 | Rung | Source | Reach for |
@@ -45,16 +52,16 @@ every time: look before you search.
 5. **Date it.** Record version and date for anything that drifts — APIs, prices,
    defaults, package behaviour. An undated fact is a guess with a citation.
 
-## Output
+## Output — return it literally, not as prose
 
-    Answer: <one paragraph, direct>
+**Answer:** one paragraph, direct.
 
-    | Claim | Source | How verified |
-    |---|---|---|
-    | … | url / file:line / tool call | read / reproduced / cross-checked |
+| Claim | Source | How verified |
+|---|---|---|
+| … | url / `file:line` / tool call | read / reproduced / cross-checked |
 
-    Confidence: high | medium | low — <why>
-    Unverified: <what you could not confirm, and what would confirm it>
+**Confidence:** high · medium · low — why.
+**Unverified:** what you could not confirm, and what would confirm it (or "none").
 
 Name the gaps. Silence about a gap reads as certainty.
 
