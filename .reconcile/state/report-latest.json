@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "generated_at": "2026-11-20T14:25:00Z",
+  "counts": {
+    "open_issues": 3,
+    "plan_items": 17,
+    "orphaned_issues": 3,
+    "stale_items": 0,
+    "inconsistent_items": 0,
+    "matched": 1,
+    "possible_matches": 0,
+    "orphaned_plans": 3,
+    "in_progress_notes": 1,
+    "resolved_issues": 4
+  },
+  "matched": [
+    {
+      "issue": 106,
+      "title": "Move RouterOS REST access to TLS",
+      "plan": "plans/issue-106.md",
+      "confidence": 1.0
+    }
+  ],
+  "orphaned_issues": [
+    {
+      "issue": 413,
+      "title": "Remove all ERPNext/Frappe ties",
+      "assignee": "growlf",
+      "status": "planned \u2014 7 stage sub-issues created (#458-#464)",
+      "sub_issues": [
+        458,
+        459,
+        460,
+        461,
+        462,
+        463,
+        464
+      ],
+      "d1_resolved": "Vikunja"
+    },
+    {
+      "issue": 359,
+      "title": "Internal CA: generate CA, sign device certs",
+      "assignee": "growlf",
+      "labels": [
+        "status:blocked-infra",
+        "status:needs-decision"
+      ],
+      "status": "blocked, waiting decision"
+    }
+  ],
+  "orphaned_plans": [
+    {
+      "plan": "plans/opskit-doctor.md",
+      "status": "approved",
+      "priority": "high"
+    },
+    {
+      "plan": "plans/mcp-credential-bootstrap.md",
+      "status": "in-progress",
+      "priority": 3
+    },
+    {
+      "plan": "plans/lfnw-django-unified-volunteer-card.md",
+      "status": "open"
+    }
+  ],
+  "in_progress_notes": [
+    {
+      "issue": 106,
+      "plan": "plans/issue-106.md",
+      "note": "open, assigned to growlf \u2014 active work"
+    }
+  ],
+  "resolved_issues": [
+    {
+      "issue": 449,
+      "reason": "empty bug template, never filled"
+    },
+    {
+      "issue": 447,
+      "reason": "already fixed - OPSKIT_ROOT override in place"
+    },
+    {
+      "issue": 372,
+      "reason": "codification already exists - switch-env.sh, setup-hooks.sh, open-ticket.sh"
+    },
+    {
+      "issue": 369,
+      "reason": "work in feat/generic-search-members-skill branch"
+    }
+  ]
+}
