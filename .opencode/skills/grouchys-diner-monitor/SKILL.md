@@ -98,7 +98,6 @@ bash capture-state.sh && bash compare-snapshots.sh
   },
   "content": {
     "platform_odoo": true,
-    "platform_erpnext": false,
     "platform_vaultwarden": false,
     "cloudflare_at_www": true
   },

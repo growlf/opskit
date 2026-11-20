@@ -6,7 +6,6 @@
   "tools": {
     "mikromcp_*": false,
     "github_*": false,
-    "erpnext_*": false,
     "technitium_*": false,
     "proxmox_*": false,
     "bitwarden_*": false

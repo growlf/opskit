@@ -23,14 +23,6 @@
     {
       "type": "orphaned-issue",
       "priority": 2,
-      "issue": 413,
-      "issue_title": "Remove all ERPNext/Frappe ties",
-      "assignee": "growlf",
-      "reason": "no plan or roadmap reference"
-    },
-    {
-      "type": "orphaned-issue",
-      "priority": 2,
       "issue": 372,
       "issue_title": "Start-session flow: codify skill into bin/ script",
       "assignee": "growlf",
@@ -93,26 +85,8 @@
     },
     {
       "type": "stage-sub-issue",
-      "issue": 460,
-      "title": "Stage 2: Deprecate ERPNext schema keys",
-      "status": "created"
-    },
-    {
-      "type": "stage-sub-issue",
-      "issue": 461,
-      "title": "Stage 3: Remove erpnext MCP wiring",
-      "status": "created"
-    },
-    {
-      "type": "stage-sub-issue",
       "issue": 462,
       "title": "Stage 4: Migrate env layers",
-      "status": "created"
-    },
-    {
-      "type": "stage-sub-issue",
-      "issue": 463,
-      "title": "Stage 5: Delete ERPNext/Frappe code",
       "status": "created"
     },
     {
@@ -125,12 +99,6 @@
       "type": "decision",
       "issue": 413,
       "decision": "D1: Vikunja",
-      "status": "resolved"
-    },
-    {
-      "type": "correction",
-      "issue": 413,
-      "correction": "C10: caddy/defaults/main.yml has no ERPNext ref - do not delete",
       "status": "resolved"
     }
   ]

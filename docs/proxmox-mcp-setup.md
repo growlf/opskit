@@ -216,7 +216,6 @@ in the agent session.
 
 ## Related
 
-- `docs/erpnext-mcp-setup.md` — the sibling ERPNext server runbook; same
   vault/launcher pattern.
 - `docs/INSTALL.md` §6.4 — all MCP servers this repo owns, migrating runtime
   config between workstations.

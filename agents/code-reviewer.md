@@ -16,8 +16,7 @@ permission:
   write: deny
   webfetch: deny
   "mikromcp_*": deny
-  "erpnext_*": deny
-  "technitium_*": deny
+    "technitium_*": deny
   "proxmox_*": deny
   "wireguard_*": deny
   "relay-shell_*": deny

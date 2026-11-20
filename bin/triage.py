@@ -56,7 +56,7 @@ DEFAULT_RULES = [
     # F: Lifecycle, vault, helpdesk, ledger
     {"area": "F", "globs": ["bin/lifecycle-processor.py", "bin/bw-management.py",
         "bin/token-inventory.py", "bin/suggest-client-tokens.py", "bin/hd-ticket-triage.py",
-        "bin/frappe-exec.py", "bin/idea.py", "bin/idea-cmd.py", "bin/semaphore-sync.py",
+ "bin/idea.py", "bin/idea-cmd.py", "bin/semaphore-sync.py",
         "plans/**", "proposals/**", "policies/**"]},
     # G: Ansible
     {"area": "G", "globs": ["ansible/**", ".ansible-lint.yml", "ansible.cfg",

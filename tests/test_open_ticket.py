@@ -19,7 +19,6 @@ VENV_BIN = os.path.dirname(sys.executable)
 CONFIGURED = (
     "ticket:\n"
     "  prefix: TS\n"
-    "  helpdesk: erpnext\n"
     "  helpdesk_endpoint: http://127.0.0.1:9\n"
     "  helpdesk_tenant: testtenant\n"
 )
@@ -38,7 +37,6 @@ def _run(root: Path, *args: str, extra_env: dict | None = None,
          pythonpath: str | None = None) -> subprocess.CompletedProcess:
     # Strip every credential this script might read so a developer's exported
     # environment cannot make a test pass (or fail) by accident.
-    env = {k: v for k, v in os.environ.items() if not k.startswith("ERPNEXT_")}
     env["OPSKIT_ROOT"] = str(root)
     env["PATH"] = VENV_BIN + ":" + env["PATH"]
     if pythonpath:
@@ -156,8 +154,6 @@ def test_close_clears_ticket(tmp_path):
 # service account is now preferred; the password path is an explicit fallback.
 
 TOKEN_ENV = {
-    "ERPNEXT_API_KEY_TESTTENANT": "key123",
-    "ERPNEXT_API_SECRET_TESTTENANT": "secret456",
 }
 
 
@@ -180,7 +176,6 @@ def test_token_auth_preferred_over_password(tmp_path):
     pp, log = _stub(tmp_path)
     r = _run(root, "some work", pythonpath=pp, extra_env={
         **TOKEN_ENV,
-        "ERPNEXT_ADMIN_PASSWORD_TESTTENANT": "adminpw",
         "STUB_LOG": str(log),
     })
     assert r.returncode == 0, r.stderr
@@ -192,7 +187,6 @@ def test_password_fallback_still_works(tmp_path):
     root = _root(tmp_path, CONFIGURED)
     pp, log = _stub(tmp_path)
     r = _run(root, "some work", pythonpath=pp, extra_env={
-        "ERPNEXT_ADMIN_PASSWORD_TESTTENANT": "adminpw",
         "STUB_LOG": str(log),
     })
     assert r.returncode == 0, r.stderr
@@ -208,8 +202,6 @@ def test_admin_username_is_not_hardcoded(tmp_path):
     root = _root(tmp_path, CONFIGURED)
     pp, log = _stub(tmp_path)
     r = _run(root, "some work", pythonpath=pp, extra_env={
-        "ERPNEXT_ADMIN_PASSWORD_TESTTENANT": "adminpw",
-        "ERPNEXT_ADMIN_USER_TESTTENANT": "svc@example.test",
         "STUB_LOG": str(log),
     })
     assert r.returncode == 0, r.stderr
@@ -223,9 +215,6 @@ def test_missing_credential_names_both_methods(tmp_path):
     root = _root(tmp_path, CONFIGURED)
     r = _run(root, "some work")
     assert r.returncode == 1
-    assert "ERPNEXT_API_KEY_TESTTENANT" in r.stderr
-    assert "ERPNEXT_API_SECRET_TESTTENANT" in r.stderr
-    assert "ERPNEXT_ADMIN_PASSWORD_TESTTENANT" in r.stderr
     assert _ticket(root) is None
 
 
@@ -234,12 +223,10 @@ def test_untenanted_vars_are_accepted(tmp_path):
     root = _root(tmp_path, (
         "ticket:\n"
         "  prefix: TS\n"
-        "  helpdesk: erpnext\n"
         "  helpdesk_endpoint: http://127.0.0.1:9\n"
     ))
     pp, log = _stub(tmp_path)
     r = _run(root, "some work", pythonpath=pp, extra_env={
-        "ERPNEXT_API_KEY": "k", "ERPNEXT_API_SECRET": "s", "STUB_LOG": str(log),
     })
     assert r.returncode == 0, r.stderr
     assert _ticket(root) == "TS-0123"

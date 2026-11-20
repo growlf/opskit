@@ -69,8 +69,6 @@ Technitium DHCP, NetBox export):
    in-repo server as `{"type": "local", "command": ["/abs/path/bin/mcp-run.sh",
    "<name>"]}` so secrets come from the vault at launch, not the config
 3. Document the tools in the file's docstring
-4. See docs/erpnext-mcp-setup.md for the end-to-end enablement flow
-
 ## Testing
 
 ```bash

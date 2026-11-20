@@ -4,7 +4,6 @@ Everything here is offline: VikunjaClient is replaced with a MagicMock double
 (spec'd against the real class so a call to a nonexistent method fails
 loudly) and `get_client` is monkeypatched to hand that double back -- no
 network, no live Vikunja call, ever. The module is loaded fresh per test via
-importlib (mirrors tests/test_erpnext_mcp_server.py) because the file lives
 at mcp/vikunja-mcp-server.py, not an importable package name.
 
 Coverage focus:
@@ -52,7 +51,6 @@ def isolated_tenants_file(tmp_path, monkeypatch):
     (loaded fresh per test via `load_module`, below) never reads a
     developer's real, gitignored mcp/tenants-vikunja.local.json -- whether or
     not one exists, and regardless of what it contains (same defect class as
-    opskit issue #76 for the erpnext server)."""
     fixture_file = tmp_path / "tenants-vikunja.local.json"
     fixture_file.write_text(json.dumps({
         TENANT: {"base_url": BASE_URL, "default_project": "Tickets"},

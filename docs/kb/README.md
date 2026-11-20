@@ -17,9 +17,7 @@ Knowledge Base template in `.opencode/skills/templates/SKILL.md`. Use the
   always send the complete task (reactions/related_tasks = `null`, not `[]`).
 - [`opencode-desktop-window-never-opens.md`](opencode-desktop-window-never-opens.md)
   — OpenCode desktop is "running" but no window ever appears; a wedged
-  Electron child-process bootstrap plus single-instance lock; kill to recover.
-- [`frappe-500-after-restart-db-grant.md`](frappe-500-after-restart-db-grant.md) —
-  a Frappe site 500s after a container restart because its DB user was granted for
+  Electron child-process bootstrap plus single-instance lock; kill to recover.  a Frappe site 500s after a container restart because its DB user was granted for
   one container IP instead of `%`; diagnose from the backend log, fix the grant.
 - [`bitwarden-cli-serves-stale-cache.md`](bitwarden-cli-serves-stale-cache.md) —
   `bw list` answers from its local cache even while locked, so "not in the vault"

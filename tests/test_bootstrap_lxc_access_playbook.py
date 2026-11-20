@@ -3,7 +3,6 @@
 Gives a freshly created, stopped LXC an SSH server and key-only root access, entirely
 through `pct` on the Proxmox node (the container has no SSH to connect to yet). It is never
 executed in CI, so the properties that matter are pinned here, following
-tests/test_erpnext_dev_lxc_playbook.py and tests/test_compose_app_lxc_playbook.py.
 
 Failure modes that are silent and expensive, one test each:
 

@@ -16,14 +16,6 @@
     "docstring. Three examples:",
     "  technitium \u2014 one password per DNS server, named by that server's",
     "               'env_pass' key in tenants-technitium.local.json",
-    "  erpnext    \u2014 ERPNEXT_API_KEY_<TENANT> and ERPNEXT_API_SECRET_<TENANT>",
-    "               per tenant in tenants.local.json (token auth against a",
-    "               low-privilege service account \u2014 never an admin password).",
-    "               Store the api_key and the BARE api_secret as two fields,",
-    "               never the full 'key:secret' token: token auth builds",
-    "               'Authorization: token <key>:<secret>', so a full token",
-    "               becomes 'token key:key:secret' and 401s (see",
-    "               docs/erpnext-mcp-setup.md).",
     "  wireguard  \u2014 password + TOTP seed per environment, named by that",
     "               environment's 'env_pass' / 'env_totp' keys in",
     "               tenants-wireguard.local.json. Note field 'totp': it exports",
@@ -49,16 +41,6 @@
   ],
   "technitium": {
     "TECHNITIUM_CLIENT1_PASS": {
-      "item": "00000000-0000-0000-0000-000000000000",
-      "field": "password"
-    }
-  },
-  "erpnext": {
-    "ERPNEXT_API_KEY_CLIENT1": {
-      "item": "00000000-0000-0000-0000-000000000000",
-      "field": "username"
-    },
-    "ERPNEXT_API_SECRET_CLIENT1": {
       "item": "00000000-0000-0000-0000-000000000000",
       "field": "password"
     }

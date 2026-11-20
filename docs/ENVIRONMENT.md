@@ -35,8 +35,7 @@ print('valid')
 
 | Field | Notes |
 |-------|-------|
-| `ticket.helpdesk` | `erpnext`, `github_issues`, or `none` |
-| `ticket.helpdesk_endpoint` | ERPNext API URL (if `helpdesk: erpnext`) |
+| `ticket.helpdesk` | `github_issues`, or `none` |
 | `ticket.helpdesk_tenant` | ERPNext tenant name |
 | `connectivity.vpn_bringup` | Command to bring up VPN (for remote envs) |
 | `vault.collection` | Vaultwarden collection or OpenBao mount path |

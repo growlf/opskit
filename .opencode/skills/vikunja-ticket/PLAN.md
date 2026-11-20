@@ -31,14 +31,14 @@ curl." Each is a real defect, not a style nit:
    violation ("never hardcode environment names, hostnames, or subnets;
    discover them at runtime") and adjacent to the Client-Data-Isolation hard
    rule. Fixed by moving the base URL into a gitignored tenant config file
-   (`mcp/tenants-vikunja.local.json`), the same convention `erpnext`/
+   (`mcp/tenants-vikunja.local.json`), the same convention 
    `technitium` already use for their own instance hostnames.
 4. **"No app code" collided with Development Principle #2.** Vikunja task
    creation is application-record state (API CRUD inside a hosted app), and
    the principle is explicit that the vehicle for that is an MCP tool, not a
    loose script. A curl one-liner also can't be reused by `@skill-builder`'s
    registration conventions or bridged through `bin/mcp-call.py` the way
-   every comparable integration (technitium, proxmox, erpnext) is. Fixed by
+   every comparable integration (technitium, proxmox) is. Fixed by
    building the smallest possible real MCP tool (one function) instead of a
    documented shell command — see Architecture. This is the biggest change
    from the original draft; flagging it plainly rather than quietly expanding
@@ -58,7 +58,7 @@ curl." Each is a real defect, not a style nit:
    retries to connect-level failures only (curl exit codes 6/7/28), never to
    a request that got a server response.
 8. **No least-privilege requirement on the token.** Every other integration
-   in this repo (erpnext, proxmox) insists on a scoped service-account
+   in this repo (proxmox) insists on a scoped service-account
    credential, never an admin/personal one. The original plan didn't say
    this. Fixed — see Credentials.
 9. **Self-contradiction on "nothing interactive."** The goal says
@@ -83,9 +83,9 @@ to reach it from any runtime.
   `vikunja_create_task(tenant, title, description="", project=None)`.
   - Loads `mcp/tenants-vikunja.local.json` (gitignored; example fallback
     embedded) for each tenant's `base_url` and `default_project` — same
-    tenant-file convention as `erpnext`/`technitium`, not
+    tenant-file convention as `technitium`, not
     `environments/<env>/env.yml` (that path is for non-MCP scripts like
-    `frappe-exec.py`; MCP servers keep their own tenant config).
+    the legacy script; MCP servers keep their own tenant config).
   - Resolves the target project via `GET /api/v1/projects`: exact name match
     against `project` (or `default_project` if `project` is omitted). Zero or
     multiple matches → an error naming the candidates; never guesses.
@@ -93,7 +93,7 @@ to reach it from any runtime.
     body `{"title": title, "description": description}`.
   - Returns `{"tenant": ..., "task": {...}, "url": "<base_url>/tasks/<id>"}`
     as JSON, or `{"error": "..."}` on failure — same convention as
-    `erpnext_create_ticket`.
+    `vikunja_create_task`.
   - Auth: `Authorization: Bearer <token>`, read from the process environment
     only (see Credentials). Never logs the token; error messages quote the
     API's own JSON body, which does not echo the token back.
@@ -162,7 +162,7 @@ back as `{"error": "..."}` JSON:
 
 | Situation | Result |
 |---|---|
-| Unknown tenant | Plain string naming the valid tenants (matches `erpnext_create_ticket`'s convention) |
+| Unknown tenant | Plain string naming the valid tenants (matches `vikunja_create_task`'s convention) |
 | Empty/missing title | `{"error": "title is required"}` |
 | No project matches `project`/`default_project` | `{"error": "no project named '<x>' found. Available: ..."}` — never guesses |
 | Multiple projects share that title | `{"error": "multiple projects named '<x>' found (ids: ...)"}` — task is **not** created |

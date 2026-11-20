@@ -7,11 +7,6 @@ exclude_paths:
   # than authored, and absent in CI. Linting it locally would make `make lint`
   # disagree with CI (issue #19), and the findings are not repo code.
   - environments/
-  - ansible/roles/frappe-upgrade/
-  - ansible/roles/frappe-bench/
-  - ansible/roles/frappe-site/
-  - ansible/roles/mariadb-frappe/
-  - ansible/roles/frappe-dependencies/
 
 skip_list:
   # NOTE: never add syntax-check (or any of its sub-rules) here — it is

@@ -86,9 +86,7 @@ ansible/
   playbooks/                 13 Ansible playbooks
   ansible.cfg                Inventory path: environments/<env>/ansible/
 
-mcp/
-  erpnext-mcp-server.py      Frappe Helpdesk MCP server
-  technitium-mcp-server.py   Technitium DNS MCP server
+mcp/  technitium-mcp-server.py   Technitium DNS MCP server
   semaphore-mcp-adapter.py   Semaphore UI MCP integration
 
 schemas/

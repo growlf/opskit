@@ -39,7 +39,7 @@
 #                                         # otherwise have to re-derive `bw get item`
 #                                         # parsing (the exact duplication #80/#143/
 #                                         # #146/#155 already burned this repo on).
-#                                         # Usage: eval "$(bin/mcp-run.sh erpnext --print-env)"
+#
 #   bin/mcp-run.sh --list              # servers this repo can launch
 #
 # Requires an unlocked vault session, from either source (env var wins):
@@ -394,7 +394,6 @@ while IFS=$'\t' read -r var item field; do
         || die "vault item '$item' (for $var) not found or the session is locked"
     # JSON goes in over stdin, never interpolated into the script body — a
     # quote or backslash in a secret must not be able to corrupt the parser
-    # (same reasoning as bin/frappe-exec.py's base64 embedding).
     value=$(printf '%s' "$item_json" | "$(json_python)" -c '
 import json, sys
 d = json.load(sys.stdin)

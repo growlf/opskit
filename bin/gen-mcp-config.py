@@ -107,17 +107,7 @@ def collect_vault_map(envs: list[tuple[str, Path]]) -> dict:
         if not tenant:
             continue
         if ticket.get("helpdesk") == "none":
-            continue
-        vault_map["erpnext"] = vault_map.get("erpnext", {})
-        vault_map["erpnext"][f"ERPNEXT_API_KEY_{tenant.upper()}"] = {
-            "item": "00000000-0000-0000-0000-000000000000",
-            "field": "username",
-        }
-        vault_map["erpnext"][f"ERPNEXT_API_SECRET_{tenant.upper()}"] = {
-            "item": "00000000-0000-0000-0000-000000000000",
-            "field": "password",
-        }
-    return vault_map
+            continuereturn vault_map
 
 
 def render_tenants(tenants: dict) -> str:

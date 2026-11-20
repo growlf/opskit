@@ -1,7 +1,7 @@
 ---
 # provision-compose-app-lxc.yml — Create an unprivileged LXC container on a
 # Proxmox node that can run Docker, to host a Docker Compose application
-# (opskit #423). Generic cousin of provision-erpnext-dev-lxc.yml: everything
+# (opskit #423). Generic cousin of the legacy LXC playbook: everything
 # environment-specific is a variable the caller supplies.
 #
 # Per .opencode/rules/iac-required.md the container is system/deployment state,

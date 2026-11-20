@@ -28,21 +28,16 @@ def _cfg(mcp: dict) -> dict:
 def test_shipped_servers_derived_from_repo():
     names = cmw.shipped_servers(ROOT)
     # the servers that exist today; new mcp/*-mcp-server.py join automatically
-    assert {"erpnext", "technitium", "proxmox", "collab", "wireguard"} <= names
     assert "mikromcp" in names
 
 
 def test_sibling_checkout_is_error():
-    cfg = _cfg({"erpnext": {
-        "command": "/home/user/Projects/sibling/scripts/erpnext-mcp-run.sh"}})
     errors, warnings, _ = cmw.check(cfg, ROOT)
     assert len(errors) == 1 and not warnings
     assert "OUTSIDE this repo" in errors[0]
 
 
 def test_in_repo_launcher_is_clean():
-    cfg = _cfg({"erpnext": {
-        "command": f"{ROOT}/bin/mcp-run.sh erpnext"}})
     errors, warnings, _ = cmw.check(cfg, ROOT)
     assert not errors and not warnings
 
@@ -103,13 +98,9 @@ def _run(args, **kw):
 
 def test_cli_exit_codes(tmp_path):
     bad = tmp_path / "bad.json"
-    bad.write_text(json.dumps(_cfg({"erpnext": {
-        "command": "/sibling/scripts/erpnext-mcp-run.sh"}})))
     assert _run(["--config", str(bad)]).returncode == 1
 
     clean = tmp_path / "clean.json"
-    clean.write_text(json.dumps(_cfg({"erpnext": {
-        "command": f"{ROOT}/bin/mcp-run.sh erpnext"}})))
     assert _run(["--config", str(clean)]).returncode == 0
 
     assert _run(["--config", str(tmp_path / "absent.json")]).returncode == 0
@@ -122,8 +113,6 @@ def test_cli_exit_codes(tmp_path):
 def test_jsonc_with_comments_passes(tmp_path):
     """A JSONC config with "//" comments is accepted (issue #288)."""
     cfg = tmp_path / "jsonc.json"
-    cfg.write_text(json.dumps(_cfg({"erpnext": {
-        "command": f"{ROOT}/bin/mcp-run.sh erpnext"}})) + '\n// comment here\n')
     assert _run(["--config", str(cfg)]).returncode == 0
 
 

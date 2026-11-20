@@ -9,8 +9,6 @@
 #   bin/open-ticket.sh close              # clear active ticket
 #
 # Credentials (issue #91) — API token preferred, admin password as a fallback:
-#   ERPNEXT_API_KEY_<TENANT> + ERPNEXT_API_SECRET_<TENANT>   (least privilege)
-#   ERPNEXT_ADMIN_PASSWORD_<TENANT> [+ ERPNEXT_ADMIN_USER_<TENANT>]
 # <TENANT> is ticket.helpdesk_tenant from env.yml, uppercased; the un-suffixed
 # names are used when an env declares no tenant. Resolve the token pair from the
 # vault rather than exporting it by hand — see mcp/vault-map.local.json and
@@ -191,23 +189,15 @@ TICKET_ID=$(HELPDESK_TENANT="$HELPDESK_TENANT" \
 import os, sys
 
 # Auth preference: API token first, admin session login only as an explicit
-# fallback (issue #91). The repo provisions ERPNEXT_API_KEY_<TENANT> /
-# ERPNEXT_API_SECRET_<TENANT> through mcp/vault-map + bin/mcp-run.sh for a
 # least-privilege service account; it has never provisioned an admin password,
 # and the only Administrator credential in the vault is a retired one that 401s.
 # Creating a ticket needs helpdesk-agent rights, which the service account has,
 # so demanding full site admin for it was backwards.
 tenant = os.environ.get("HELPDESK_TENANT", "")
 suffix = f"_{tenant.upper()}" if tenant else ""
-key_var, secret_var = f"ERPNEXT_API_KEY{suffix}", f"ERPNEXT_API_SECRET{suffix}"
-pw_var, user_var = f"ERPNEXT_ADMIN_PASSWORD{suffix}", f"ERPNEXT_ADMIN_USER{suffix}"
 
-api_key = os.environ.get(key_var) or os.environ.get("ERPNEXT_API_KEY", "")
-api_secret = os.environ.get(secret_var) or os.environ.get("ERPNEXT_API_SECRET", "")
-password = os.environ.get(pw_var) or os.environ.get("ERPNEXT_ADMIN_PASSWORD", "")
 # Never hardcode an administrative username; default only if a password path is
 # actually being used.
-admin_user = os.environ.get(user_var) or os.environ.get("ERPNEXT_ADMIN_USER", "Administrator")
 host = os.environ.get("HELPDESK_ENDPOINT", "")
 
 token_auth = bool(api_key and api_secret)
@@ -219,7 +209,6 @@ if not token_auth and not password:
         "ERROR: no helpdesk credential found. Tried token auth "
         f"({key_var} + {secret_var}) then password auth ({pw_var}). "
         "Token auth is preferred — resolve it from the vault with "
-        "`bin/mcp-run.sh erpnext` or export the pair.",
         file=sys.stderr,
     )
     sys.exit(1)
@@ -262,7 +251,6 @@ if [ "$TICKET_EXIT" -ne 0 ] || [ -z "${TICKET_ID:-}" ]; then
     echo -e "${RED}Ticket creation failed on helpdesk '$HELPDESK'.${NC}" >&2
     echo "A configured helpdesk must record a real ticket — no automatic local fallback." >&2
     echo "The error above names which auth method was tried (tenant='${HELPDESK_TENANT:-}')." >&2
-    echo "Preferred credential: ERPNEXT_API_KEY_<TENANT> + ERPNEXT_API_SECRET_<TENANT>," >&2
     echo "resolvable from the vault — see mcp/vault-map.local.json and bin/mcp-run.sh." >&2
     echo "Set the credential and retry, or deliberately use local tracking:" >&2
     echo "  bin/open-ticket.sh --local \"$SUBJECT\"" >&2

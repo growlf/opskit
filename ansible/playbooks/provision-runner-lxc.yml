@@ -5,12 +5,12 @@
 # Generalizes the informal build of an existing self-hosted CI-runner LXC in
 # another environment (a Docker-capable, unprivileged, onboot-enabled
 # container registered as a GitHub Actions runner) into a reusable playbook,
-# the same way provision-erpnext-dev-lxc.yml generalized its own precedent
+# the same way the legacy LXC playbook generalized its own precedent
 # (#150).
 # Per .opencode/rules/iac-required.md the container is system/deployment
 # state, so its rebuild path is this playbook, not a hand-run `pct create`.
 #
-# SAFETY POSTURE (identical to provision-erpnext-dev-lxc.yml, #150/#187)
+# SAFETY POSTURE (identical to the legacy LXC playbook, #150/#187)
 #   - Idempotent: an existing container is never recreated or destroyed. If the
 #     target ID is in use by something that does not look like this container,
 #     the play FAILS rather than adopting or overwriting it.
@@ -27,7 +27,7 @@
 #   - Network identity is never hardcoded. ct_id/ct_ip/ct_gateway/
 #     ssh_allow_source have NO default — the address is not yet allocated,
 #     so the play must fail loudly rather than invent one. ct_hostname DOES
-#     have a purpose-named default (like provision-erpnext-dev-lxc.yml's
+#     have a purpose-named default (like the legacy LXC playbook's
 #     own ct_hostname default) — override it for a second box or a
 #     distinguishing name; it isn't network-identifying the way an address
 #     is, so it doesn't carry the same risk a wrong guess would.
@@ -108,7 +108,7 @@
     # and this box's Docker requirement.
     ct_ostemplate_name: ubuntu-24.04-standard_24.04-2_amd64.tar.zst
     ct_unprivileged: true
-    # Unlike provision-erpnext-dev-lxc.yml's ct_onboot: false — this box must
+    # Unlike the legacy LXC playbook's ct_onboot: false — this box must
     # come back up after a Nexus reboot to keep serving Remote Control
     # unattended. That's the entire point of the box.
     ct_onboot: true
@@ -148,14 +148,14 @@
     # needs all three: this switch, the vNIC's firewall=1, and the guest's own
     # rules file. Checked BEFORE the container is created, so a refusal costs
     # nothing and never leaves a half-provisioned node behind. Adapted from
-    # provision-erpnext-dev-lxc.yml (#187) — that file distinguishes "file
+    # the legacy LXC playbook (#187) — that file distinguishes "file
     # genuinely absent" from "read error" by string-matching slurp's error
     # message, which broke live during #209's provisioning (this ansible-core
     # version says "File not found: ...", not the "No such file" that check
     # was written against, so an absent file was misclassified as unreadable).
     # A structural stat check first, rather than a second string to match,
     # closes that off for any future ansible-core wording change too — not
-    # backported to provision-erpnext-dev-lxc.yml itself (out of scope for
+    # backported to the legacy LXC playbook itself (out of scope for
     # #209), but the same fix applies there.
     - name: Check whether the datacenter firewall config file exists at all
       ansible.builtin.stat:
@@ -311,7 +311,7 @@
     - name: Write the default-deny firewall rules file, with SSH admitted from the trusted LAN  # noqa: command-instead-of-module
       # Third of the three things Proxmox needs, the other two being the vNIC's
       # firewall=1 and the datacenter switch asserted above. Unlike
-      # provision-erpnext-dev-lxc.yml's fully-empty RULES block, this box needs
+      # the legacy LXC playbook's fully-empty RULES block, this box needs
       # direct SSH (the same requirement the CI-runner precedent had) — that is
       # the one deliberate admit rule; everything else stays default-deny.
       #

@@ -118,12 +118,8 @@ opskit mcp check
 Verify MCP config + vault session state. Optionally verify a specific server.
 
 ```bash
-opskit mcp verify
-opskit mcp verify --server erpnext
-```
+opskit mcp verify```
 
 ## Reference
 
-- `docs/INSTALL.md` — full installation guide
-- `docs/erpnext-mcp-setup.md` — ERPNext helpdesk MCP setup
-- `docs/proxmox-mcp-setup.md` — Proxmox MCP setup
+- `docs/INSTALL.md` — full installation guide- `docs/proxmox-mcp-setup.md` — Proxmox MCP setup

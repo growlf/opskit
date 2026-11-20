@@ -1,10 +1,8 @@
 """Static validation of ansible/playbooks/provision-compose-app-lxc.yml (#423).
 
-A generic, parameterised cousin of provision-erpnext-dev-lxc.yml: an unprivileged
 LXC that can run Docker, sized and addressed entirely from caller-supplied data.
 It is never executed in CI (creating a container needs a live Proxmox node), so
 the properties that matter are pinned here, following
-tests/test_erpnext_dev_lxc_playbook.py.
 
 Failure modes that are silent and expensive, one test each:
 

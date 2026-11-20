@@ -3,7 +3,6 @@
 Fully offline: nothing is executed and no Proxmox node is contacted. The module
 is loaded fresh per test via importlib because the file lives at
 mcp/proxmox-mcp-server.py rather than an importable package name (mirrors
-tests/test_erpnext_mcp_server.py).
 
 PROXMOX_TENANTS_FILE always points at a throwaway fixture so the suite never
 reads a developer's real gitignored file (opskit #76).

@@ -14,7 +14,6 @@ server. The server resolves secrets from the vault automatically.
 | Namespace | Server | Launch |
 |-----------|--------|--------|
 | mikromcp | RouterOS devices | `bin/mcp-run.sh mikromcp` |
-| erpnext | ERPNext helpdesk | `bin/mcp-run.sh erpnext` |
 | technitium | DNS/DHCP | `bin/mcp-run.sh technitium` |
 | proxmox | Proxmox VMs | `bin/mcp-run.sh proxmox` |
 | bitwarden | Vault | `bin/mcp-run.sh bitwarden` |

@@ -215,7 +215,6 @@ def test_check_flags_missing_vault_map(tmp_path):
 
 
 def test_check_flags_server_with_no_declared_credentials(tmp_path):
-    """The erpnext case: a server present, but nothing wired to the vault."""
     root = _make_root(tmp_path, {"other": {"X": {"item": "i1"}}})
     bw = _make_bw_stub(tmp_path, {})
 

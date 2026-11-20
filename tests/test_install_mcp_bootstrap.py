@@ -76,7 +76,6 @@ def _make_fake_repo(tmp_path: Path) -> tuple[Path, Path]:
         _py_stub_gen
         + "if len(sys.argv) > 1:\n"
         "    print('PROBE-INVOKED')\n"
-        "    print('OK    erpnext    3 tools')\n"
         "    print('All 1 server(s) serve tools.')\n"
         "    sys.exit(0)\n"
     ))
@@ -138,7 +137,6 @@ def test_check_with_a_broken_probe_is_informational_not_fatal(tmp_path):
     repo, home = _make_fake_repo(tmp_path)
     (repo / "bin" / "mcp-call.py").write_text(_py_stub(
         "import os, sys\n"
-        "print('FAIL  erpnext  BW_SESSION (vault locked)')\n"
         "print('1 of 1 server(s) cannot serve tools.', file=sys.stderr)\n"
         "sys.exit(1)\n"
     ))
@@ -146,7 +144,6 @@ def test_check_with_a_broken_probe_is_informational_not_fatal(tmp_path):
     result = _run_check(repo, home)
 
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "FAIL  erpnext" in result.stdout + result.stderr
 
 
 # ── structural: install mode wires generation + probe, summary checks repo ───

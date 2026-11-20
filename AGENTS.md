@@ -106,7 +106,6 @@ All scripts are data-driven — they read from `environments/$ACTIVE_ENV/env.yml
 | `bin/automation-ladder.py` | Track manual processes → escalate to scripts/playbooks; `sync-agents` renders `agents/*.md` into both harnesses |
 | `bin/opskit-aware.py` | Make a project drivable as a subagent member: `init` scaffolds `.opskit/pack.yml`+README into a repo; `check` validates it against `schemas/project.schema.json` (contract-versioned; members run it in their own CI, OpsKit re-runs at mount). See `docs/opskit-aware.md` |
 | `bin/lifecycle-processor.py` | Manage lifecycle transitions |
-| `bin/frappe-exec.py` | Sanctioned Path B Frappe/ERPNext exec (SSH + docker exec + bench venv python); see `frappe-access` skill |
 | `mcp/collab-mcp-server.py` | Collaboration-layer self-check: verify every path this file names, report skill/tool drift, propose improvements. **Never edits the governing docs** — run via `bin/mcp-call.py collab --list` |
 | `bin/mcp-run.sh` | Launch an `mcp/` server — or an external one declared in `mcp/external-servers.json` — with secrets resolved from the vault (`--check` validates the launch path without fetching anything) |
 | `bin/suggest-client-tokens.py` | Report client identifiers found in the private layers that `.client-tokens` does not guard (reports only — never writes; its output is client-identifying, keep it local) |
@@ -154,7 +153,7 @@ python3 bin/automation-ladder.py sync-agents   # then restart the agent session
   hook is the tighter follow-up.
 
 ## Skills (load with: opencode tool skill use <name>)
-`startsession` | `lifecycle` | `git` | `security` | `backup` | `infra` | `check-connectivity` | `templates` | `tools` | `endsession` | `idea-triage` | `idea-cmd` | `baseline` | `gh` | `helpdesk-ticket` | `search-members` | `frappe-access` | `dogfood-cycle` | `release` | `zabbix` | `cleanup` | `handoff` | `ticket-triage` | `gitlab-pages-dns` | `grind` | `knowledge-base` | `routeros` | `github-cli` | `triage` | `bwunlock` | `research` | `websearch` | `technitium-dns` | `proxmox-cli` | `vikunja-ticket` | `vikunja-user` | `mail-auth-check` | `shared-browser` | `grouchys-diner-monitor`
+`startsession` | `lifecycle` | `git` | `security` | `backup` | `infra` | `check-connectivity` | `templates` | `tools` | `endsession` | `idea-triage` | `idea-cmd` | `baseline` | `gh` | `helpdesk-ticket` | `search-members` | `dogfood-cycle` | `release` | `zabbix` | `cleanup` | `handoff` | `ticket-triage` | `gitlab-pages-dns` | `grind` | `knowledge-base` | `routeros` | `github-cli` | `triage` | `bwunlock` | `research` | `websearch` | `technitium-dns` | `proxmox-cli` | `vikunja-ticket` | `vikunja-user` | `mail-auth-check` | `shared-browser` | `grouchys-diner-monitor`
 
 Load the relevant skill before working in its domain.
 
@@ -226,7 +225,7 @@ Set by the project owner; they apply to every session, not per-task.
        Plain scripts are only for repo/dev workflow.
      - **Application record state** — API-driven CRUD, queries, relationships
        inside a hosted app → the tool IS an **MCP tool** (e.g.
-       `mcp/erpnext-mcp-server.py`'s `erpnext_create_ticket`), or a codified
+       `mcp/vikunja-mcp-server.py`'s `vikunja_create_task`), or a codified
        CLI where no agent surface is needed. These operations are interactive
        and data-returning, not convergence-shaped, so Ansible models them
        badly — an MCP tool is the correct rung here, not a downgrade to a

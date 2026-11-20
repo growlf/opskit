@@ -89,9 +89,7 @@ MCP servers expose opskit functionality to AI agents. Create `mcp/<name>-mcp-ser
 ```python
 #!/usr/bin/env python3
 """My Service MCP server — provides tool_name, other_tool."""
-# Use the MCP SDK pattern from existing servers:
-# mcp/erpnext-mcp-server.py
-# mcp/technitium-mcp-server.py
+# Use the MCP SDK pattern from existing servers:# mcp/technitium-mcp-server.py
 # mcp/semaphore-mcp-adapter.py
 ```
 
@@ -109,7 +107,7 @@ launch — never paste credentials into the config:
 }
 ```
 `command` is an array of strings, and `type` is required. See
-`docs/erpnext-mcp-setup.md` (ERPNext) or `docs/proxmox-mcp-setup.md`
+`docs/proxmox-mcp-setup.md`
 (Proxmox) for the full enablement flow.
 
 ## Adding a CLI subcommand

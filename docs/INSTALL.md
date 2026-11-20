@@ -311,7 +311,6 @@ a gitignored `mcp/vault-map.local.json` mapping each env var to a vault
 item/field — copy `mcp/vault-map.example.json` and fill it in. Nothing tracked
 in this repo contains a vault identifier or a tenant name.
 
-Per-server enablement runbooks: `docs/erpnext-mcp-setup.md` (ERPNext/hosted
 helpdesk) and `docs/proxmox-mcp-setup.md` (Proxmox clusters, incl. the
 `PROXMOX_ENV` cluster-selection switch and the `Sys.Audit` role requirement).
 

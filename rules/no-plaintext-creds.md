@@ -33,7 +33,7 @@ db_root_password: !vault |
 
 **Right — runtime Bitwarden lookup:**
 ```yaml
-db_root_password: "{{ lookup('pipe', 'bw get password MariaDB Root: frappe-helpdesk') }}"
+db_root_password: "{{ lookup('pipe', 'bw get password MariaDB Root: the helpdesk server') }}"
 ```
 
 ## Session note for AI agents
@@ -49,7 +49,7 @@ Check Bitwarden first — assume the credential already exists there.
 
 | Item name | What it is |
 |-----------|-----------|
-| `Frappe Admin: support.cascadesteam.org` | Frappe/ERPNext site admin password |
+| `Frappe Admin: support.cascadesteam.org` | Frappe/the ERP site admin password |
 | `Frappe Admin: helpdesk.<tenant-domain>` | tenant admin password |
-| `MariaDB Root: frappe-helpdesk` | MariaDB root password on cs-helpdesk (CT106) |
-| `Server: frappe-helpdesk` | SSH/server credentials for cs-helpdesk |
+| `MariaDB Root: the helpdesk server` | MariaDB root password on cs-helpdesk (CT106) |
+| `Server: the helpdesk server` | SSH/server credentials for cs-helpdesk |

@@ -4,7 +4,6 @@ Everything here is offline. `requests.Session` is replaced with a fake whose
 routes are declared per test, so no dashboard is ever contacted, and the module
 is loaded fresh per test via importlib because the file lives at
 mcp/wireguard-mcp-server.py rather than an importable package name (mirrors
-tests/test_erpnext_mcp_server.py).
 
 WIREGUARD_TENANTS_FILE is always pointed at a throwaway fixture so the suite
 never reads a developer's real gitignored tenants file (opskit #76).

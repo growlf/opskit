@@ -6,9 +6,7 @@ The laptop crashes (power loss, forced reboot) while an opencode session is
 active. After reloading the session and generating a fresh vault session token,
 then restarting opencode, most MCP servers fail to connect:
 
-```
-erpnext      MCP error -32000: Connection closed
-proxmox      MCP error -32000: Connection closed
+```proxmox      MCP error -32000: Connection closed
 technitium   MCP error -32000: Connection closed
 wireguard    MCP error -32000: Connection closed
 collab       Connected                    <-- green, only this one
@@ -44,7 +42,7 @@ The servers fall into two groups:
 - `collab` declares **no secrets** in `mcp/vault-map.local.json`, so it starts
   with or without a vault session — which is why it is the one that stays
   green and makes the failure look selective.
-- `erpnext`, `proxmox`, `technitium`, and `wireguard` each declare secrets, so
+- `proxmox`, `technitium`, and `wireguard` each declare secrets, so
   they need a live session and die the moment one is missing.
 
 Resetting the token and restarting only the opencode *session* leaves the old

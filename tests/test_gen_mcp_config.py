@@ -26,7 +26,6 @@ name: test
 display_name: Test Env
 ticket:
   prefix: TEST
-  helpdesk: erpnext
   helpdesk_endpoint: https://test.example.com
   helpdesk_tenant: testtenant
 """)
@@ -66,18 +65,12 @@ name: test
 display_name: Test Env
 ticket:
   prefix: TEST
-  helpdesk: erpnext
   helpdesk_endpoint: https://test.example.com
   helpdesk_tenant: testtenant
 """)
     mod = _load_module()
     envs = mod.env_yml_files(tmp_path)
     vault_map = mod.collect_vault_map(envs)
-    assert "erpnext" in vault_map
-    assert "ERPNEXT_API_KEY_TESTTENANT" in vault_map["erpnext"]
-    assert "ERPNEXT_API_SECRET_TESTTENANT" in vault_map["erpnext"]
-    assert vault_map["erpnext"]["ERPNEXT_API_KEY_TESTTENANT"]["field"] == "username"
-    assert vault_map["erpnext"]["ERPNEXT_API_SECRET_TESTTENANT"]["field"] == "password"
 
 
 def test_render_tenants_produces_yaml(tmp_path):
@@ -92,8 +85,6 @@ def test_render_tenants_produces_yaml(tmp_path):
 def test_render_vault_map_produces_yaml(tmp_path):
     """Rendered vault-map output is valid YAML."""
     vault_map = {
-        "erpnext": {
-            "ERPNEXT_API_KEY_TEST": {
                 "item": "00000000-0000-0000-0000-000000000000",
                 "field": "username",
             }
@@ -101,7 +92,6 @@ def test_render_vault_map_produces_yaml(tmp_path):
     }
     mod = _load_module()
     output = mod.render_vault_map(vault_map)
-    assert "erpnext" in output
 
 
 def test_check_tenants_differs(tmp_path):
@@ -119,7 +109,6 @@ name: test
 display_name: Test Env
 ticket:
   prefix: TEST
-  helpdesk: erpnext
   helpdesk_endpoint: https://test.example.com
   helpdesk_tenant: testtenant
 """)

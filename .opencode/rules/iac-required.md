@@ -39,7 +39,7 @@ repo/dev workflow (git, tickets, docs, lifecycle). repetition → skill →
 This rule governs **system/deployment state** — provisioning, packages, services, config
 files, baselines, reset procedures. It does **not** govern **application record state** —
 API-driven CRUD, queries, or relationships inside a hosted app (example: creating or
-updating an ERPNext HD Ticket via `mcp/erpnext-mcp-server.py`'s `erpnext_create_ticket`).
+
 That work is interactive and data-returning rather than convergence-shaped, so Ansible
 models it badly. For application record state, the codification target of the automation
 ladder is an **MCP tool** directly (or a codified CLI where no agent surface is needed) —

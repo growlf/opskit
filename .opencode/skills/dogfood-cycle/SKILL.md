@@ -67,7 +67,6 @@ usually the loop talking you out of finishing.
   without saying so first.
 - **Read-only first.** Probe and observe before writing anything.
 - Anything touching a live host still goes through the normal access path —
-  load `frappe-access` for Frappe work, and the relevant domain subagent
   otherwise. Rapid cycling changes the cadence, never the access rules.
 - Repetition is a signal: a cycle you run three times is a candidate for
   `bin/automation-ladder.py`.
