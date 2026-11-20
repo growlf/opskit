@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.conftest import CONFIG_PATH_VARS
+from conftest import CONFIG_PATH_VARS
 
 ROOT = Path(__file__).resolve().parents[1]
 SERVERS = sorted((ROOT / "mcp").glob("*-mcp-server.py"))

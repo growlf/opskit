@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "generated_at": "2026-11-20T14:25:00Z",
+  "actions": [
+    {
+      "type": "orphaned-issue",
+      "priority": 1,
+      "issue": 449,
+      "issue_title": "Update Readme.",
+      "reason": "no plan or roadmap reference",
+      "status": "closed",
+      "action_taken": "closed - empty bug template"
+    },
+    {
+      "type": "orphaned-issue",
+      "priority": 1,
+      "issue": 447,
+      "issue_title": "test_init_generates_opskit_md writes a stray member",
+      "reason": "no plan or roadmap reference",
+      "status": "closed",
+      "action_taken": "closed - already fixed"
+    },
+    {
+      "type": "orphaned-issue",
+      "priority": 2,
+      "issue": 413,
+      "issue_title": "Remove all ERPNext/Frappe ties",
+      "assignee": "growlf",
+      "reason": "no plan or roadmap reference"
+    },
+    {
+      "type": "orphaned-issue",
+      "priority": 2,
+      "issue": 372,
+      "issue_title": "Start-session flow: codify skill into bin/ script",
+      "assignee": "growlf",
+      "reason": "no plan or roadmap reference",
+      "status": "closed",
+      "action_taken": "closed - codification exists"
+    },
+    {
+      "type": "orphaned-issue",
+      "priority": 2,
+      "issue": 369,
+      "issue_title": "Add generic member-data search reference skill",
+      "assignee": "growlf",
+      "reason": "no plan or roadmap reference",
+      "status": "closed",
+      "action_taken": "closed - work in branch"
+    },
+    {
+      "type": "orphaned-issue",
+      "priority": 3,
+      "issue": 359,
+      "issue_title": "Internal CA: generate CA, sign device certs",
+      "assignee": "growlf",
+      "reason": "no plan or roadmap reference, blocked-infra"
+    },
+    {
+      "type": "orphaned-plan",
+      "priority": 3,
+      "source_file": "plans/opskit-doctor.md",
+      "item_title": "opskit doctor",
+      "reason": "approved, high priority, no issue reference"
+    },
+    {
+      "type": "orphaned-plan",
+      "priority": 3,
+      "source_file": "plans/mcp-credential-bootstrap.md",
+      "item_title": "MCP credential bootstrap",
+      "reason": "in-progress, no issue reference"
+    },
+    {
+      "type": "orphaned-plan",
+      "priority": 3,
+      "source_file": "plans/lfnw-django-unified-volunteer-card.md",
+      "item_title": "Unified volunteer card template",
+      "reason": "no issue reference",
+      "status": "dropped",
+      "action_taken": "dropped - removed from plans/"
+    },
+    {
+      "type": "stage-sub-issue",
+      "issue": 458,
+      "title": "Stage 0: Safety net",
+      "status": "created"
+    },
+    {
+      "type": "stage-sub-issue",
+      "issue": 459,
+      "title": "Stage 1: Add Vikunja ticket backend",
+      "status": "created"
+    },
+    {
+      "type": "stage-sub-issue",
+      "issue": 460,
+      "title": "Stage 2: Deprecate ERPNext schema keys",
+      "status": "created"
+    },
+    {
+      "type": "stage-sub-issue",
+      "issue": 461,
+      "title": "Stage 3: Remove erpnext MCP wiring",
+      "status": "created"
+    },
+    {
+      "type": "stage-sub-issue",
+      "issue": 462,
+      "title": "Stage 4: Migrate env layers",
+      "status": "created"
+    },
+    {
+      "type": "stage-sub-issue",
+      "issue": 463,
+      "title": "Stage 5: Delete ERPNext/Frappe code",
+      "status": "created"
+    },
+    {
+      "type": "stage-sub-issue",
+      "issue": 464,
+      "title": "Stage 6: Prove it + CI guard",
+      "status": "created"
+    },
+    {
+      "type": "decision",
+      "issue": 413,
+      "decision": "D1: Vikunja",
+      "status": "resolved"
+    },
+    {
+      "type": "correction",
+      "issue": 413,
+      "correction": "C10: caddy/defaults/main.yml has no ERPNext ref - do not delete",
+      "status": "resolved"
+    }
+  ]
+}
