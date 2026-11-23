@@ -85,10 +85,8 @@ def test_render_tenants_produces_yaml(tmp_path):
 def test_render_vault_map_produces_yaml(tmp_path):
     """Rendered vault-map output is valid YAML."""
     vault_map = {
-                "item": "00000000-0000-0000-0000-000000000000",
-                "field": "username",
-            }
-        }
+        "item": "00000000-0000-0000-0000-000000000000",
+        "field": "username",
     }
     mod = _load_module()
     output = mod.render_vault_map(vault_map)

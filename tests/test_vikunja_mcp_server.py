@@ -50,7 +50,7 @@ def isolated_tenants_file(tmp_path, monkeypatch):
     """Point VIKUNJA_TENANTS_FILE at a throwaway fixture file so the module
     (loaded fresh per test via `load_module`, below) never reads a
     developer's real, gitignored mcp/tenants-vikunja.local.json -- whether or
-    not one exists, and regardless of what it contains (same defect class as
+    not one exists, and regardless of what it contains (same defect class as)."""
     fixture_file = tmp_path / "tenants-vikunja.local.json"
     fixture_file.write_text(json.dumps({
         TENANT: {"base_url": BASE_URL, "default_project": "Tickets"},
