@@ -46,7 +46,7 @@
 1:| Item | Proposal | Status | Priority | Scope |
 1:|---|---|---|---|---|
 1:| **MCP credential bootstrap** | `mcp-credential-bootstrap.md` | **In progress** (pri:3) | High | `opskit mcp` CLI, `gen-mcp-config.py`, `install.sh` step_mcp() fix |
-1:| **ERPNext/Frappe removal** | `#413` (7 stages: #458–#464) | **Stage 0: safety net done** — inventory + tag `erpNext-removal-safety-net-20261120`. Remaining: Stage 1 (Vikunja backend), 2 (deprecate schema), 3 (remove wiring), 4 (migrate env layers), 5 (delete code), 6 (delete tests), 7 (prove) | High |
+| **ERPNext/Frappe removal** | `#413` (7 stages: #458–#464) | **Complete** — all code, wiring, env refs, session notes, and skills deleted; remaining references stripped from tracked files | High |
 1:| **Vikunja unified CLI** | `vikunja-unified-cli.md` | **Approved** | Medium | Single `bin/vikunja-cli.py` replacing `vikunja-manage-user.py` |
 1:
 1:### Environment / Infrastructure
