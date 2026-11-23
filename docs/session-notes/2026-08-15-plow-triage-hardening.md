@@ -15,7 +15,7 @@ skill's own issue-triage rigor, then a skill improvement, then the rest of `/plo
 | PR | Issue | Summary |
 |---|---|---|
 | #236 | #233 | ghcr-auth playbook: parametrize host, drop stale vault paths |
-| #230 | #229 | erpnext-dev-lxc: stale template + replace `unsafe_writes` with a shell redirect (already proven insufficient once, in #209) |
+| #230 | #229 | : stale template + replace `unsafe_writes` with a shell redirect (already proven insufficient once, in #209) |
 | #232 | #231 | New `install-docker.yml` playbook |
 | #226 | #224 | `ansible/roles/vaultwarden`, converging CT104's hand-managed state |
 | #225 | #223 | Caddy role: HTTPS backends with self-signed certs |
@@ -65,7 +65,7 @@ not just product/infra changes. Reverted the direct edit, re-applied it via
 `git apply` in a proper worktree+branch, then committed there.
 
 **`unsafe_writes: true` had already failed once, in this same repo.** PR #230's review
-found the erpnext-dev-lxc playbook trusted `unsafe_writes: true` on `ansible.builtin.copy`
+found the  playbook trusted `unsafe_writes: true` on `ansible.builtin.copy`
 against pmxcfs — but `provision-runner-lxc.yml` (#209) had already hit EPERM on that
 exact approach and replaced it with a plain shell redirect. Applied the same proven fix
 here instead of merging a second copy of a bug already fixed once.

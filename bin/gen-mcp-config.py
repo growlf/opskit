@@ -39,7 +39,7 @@ DEFAULT_TARGETS = {
     "vault_map": Path.home() / "mcp" / "vault-map.local.json",
 }
 # Overrideable via env vars for testability.
-TENANTS_TARGET = os.environ.get("ERPNEXT_TENANTS_FILE", str(DEFAULT_TARGETS["tenants"]))
+TENANTS_TARGET = os.environ.get("OPSKIT_TENANTS_FILE", str(DEFAULT_TARGETS["tenants"]))
 VAULT_MAP_TARGET = os.environ.get("OPSKIT_VAULT_MAP", str(DEFAULT_TARGETS["vault_map"]))
 
 
@@ -93,8 +93,8 @@ def collect_tenants(envs: list[tuple[str, Path]]) -> dict:
 def collect_vault_map(envs: list[tuple[str, Path]]) -> dict:
     """Return vault-map entries from env.yml ticket blocks.
 
-    For each env with a helpdesk, generate ERPNEXT_API_KEY_<TENANT> and
-    ERPNEXT_API_SECRET_<TENANT> entries. The vault item is a placeholder
+    For each env with a helpdesk, generate HELPDESK_API_KEY_<TENANT> and
+    HELPDESK_API_SECRET_<TENANT> entries. The vault item is a placeholder
     (operator fills in real UUIDs).
     """
     vault_map: dict = {}

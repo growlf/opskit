@@ -36,7 +36,7 @@ print('valid')
 | Field | Notes |
 |-------|-------|
 | `ticket.helpdesk` | `github_issues`, or `none` |
-| `ticket.helpdesk_tenant` | ERPNext tenant name |
+| `ticket.helpdesk_tenant` | Tenant identifier for the helpdesk |
 | `connectivity.vpn_bringup` | Command to bring up VPN (for remote envs) |
 | `vault.collection` | Vaultwarden collection or OpenBao mount path |
 | `vault.cross_env_credentials` | Allowlist for cross-environment credential access |

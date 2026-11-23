@@ -69,7 +69,7 @@
     # docs/INSTALL.md's own documented command exactly rather than inventing
     # a different install path for the same tool. get_url can't substitute
     # here: the point is executing the fetched installer, not just fetching
-    # it — same reasoning as erp_stack/tasks/verify.yml's curl-over-uri choice
+    # it — same reasoning as tasks/verify.yml's curl-over-uri choice
     # (opskit #184), a per-line ignore rather than a skip_list entry (#83).
     - name: Install nvm  # noqa: command-instead-of-module
       ansible.builtin.shell: |
