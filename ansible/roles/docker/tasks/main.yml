@@ -5,7 +5,7 @@
 # instead of two drifting inline blocks).
 #
 # Docker's own repo, not the distro package: the distro's docker.io lags
-# upstream, and stacks managed by ansible/roles/erp_stack (and similar
+# upstream, and stacks managed by ansible/roles/ (and similar
 # compose-based roles) need current Compose v2 support.
 #
 # Idempotent: does nothing if `docker compose version` already succeeds.

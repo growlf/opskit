@@ -6,7 +6,7 @@
 #          private — see cs-erp-images CS-0029 notes.
 #
 # VAULT VARS REQUIRED (loaded automatically from the target's inventory
-# group_vars — e.g. environments/<env>/ansible/group_vars/erp_stacks/vault.yml,
+# group_vars — e.g. environments/<env>/ansible/vault.yml,
 # ansible-vault encrypted):
 #   vault_cs_ghcr_pull_user   — GitHub username owning the PAT
 #   vault_cs_ghcr_pull_token  — classic PAT, scope: read:packages
@@ -15,20 +15,20 @@
 # Connection vars (ProxyJump, IdentityFile) come from the inventory's own
 # host/group vars, same as every other playbook here — this play does not
 # set its own (opskit #233; the previous version hand-rolled a ProxyCommand
-# that duplicated, and had drifted from, the erp_stacks group's actual vars).
+# that duplicated, and had drifted from, the cloudflare_api group's actual vars).
 #
 # Usage:
 #   ansible-playbook -i environments/$ACTIVE_ENV/ansible/inventory.yml \
 #     ansible/playbooks/configure-ghcr-auth.yml -l <host> \
 #     --vault-password-file ~/.config/opskit/vault-pass-cs
 #
-# -l/--limit only intersects with `hosts:` below (erp_stacks by default) --
+# -l/--limit only intersects with `hosts:` below (cloudflare_api by default) --
 # it can't reach a host that isn't already in that inventory group. For a
-# host not yet added to erp_stacks, target it directly instead:
+# host not yet added to cloudflare_api, target it directly instead:
 #     ansible-playbook ... configure-ghcr-auth.yml -e target_host=<host> ...
 
 - name: Configure GHCR pull credentials
-  hosts: "{{ target_host | default('erp_stacks') }}"
+  hosts: "{{ target_host | default('cloudflare_api') }}"
   gather_facts: false
 
   tasks:

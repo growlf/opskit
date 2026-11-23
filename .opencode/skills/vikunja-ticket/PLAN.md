@@ -123,7 +123,7 @@ to reach it from any runtime.
   (tenant-scoped variable name, matching `TECHNITIUM_<SITE>_PASS` — this repo
   is multi-tenant, so a bare `VIKUNJA_TOKEN` would silently assume there is
   only ever one instance; the server does accept it as a fallback for a
-  single-tenant setup, same as `ERPNEXT_API_KEY`/`ERPNEXT_API_SECRET`.)
+  single-tenant setup, same as `HELPDESK_API_KEY`/`HELPDESK_API_SECRET`.)
 - `bin/mcp-run.sh vikunja` (or `--print-env`/`--check`) resolves this
   normally at launch, like every other in-repo server — no special-casing
   needed once the file exists.
