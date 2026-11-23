@@ -107,7 +107,8 @@ def collect_vault_map(envs: list[tuple[str, Path]]) -> dict:
         if not tenant:
             continue
         if ticket.get("helpdesk") == "none":
-            continuereturn vault_map
+            continue
+        return vault_map
 
 
 def render_tenants(tenants: dict) -> str:

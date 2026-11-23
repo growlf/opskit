@@ -26,7 +26,7 @@ import pytest
 # A new server belongs here — tests/test_local_config_isolation.py fails if one
 # reads a gitignored path without an override, which is what keeps this honest.
 CONFIG_PATH_VARS = (
-    "ERPNEXT_TENANTS_FILE",
+    "OPSKIT_TENANTS_FILE",
     "PROXMOX_TENANTS_FILE",
     "TECHNITIUM_SERVERS_FILE",
     "VIKUNJA_TENANTS_FILE",

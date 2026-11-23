@@ -20,7 +20,7 @@ bin/gen-mcp-config.py --check                  # exit 1 if files differ
 bin/gen-mcp-config.py --write                  # write both files (backs up existing)
 ```
 
-Targets are `~/.mcp/tenants.local.json` and `~/.mcp/vault-map.local.json`, overridable via `ERPNEXT_TENANTS_FILE` and `OPSKIT_VAULT_MAP`.
+ Targets are `~/.mcp/tenants.local.json` and `~/.mcp/vault-map.local.json`, overridable via `OPSKIT_TENANTS_FILE` and `OPSKIT_VAULT_MAP`.
 
 ## Vault Session Resolution
 
