@@ -15,16 +15,16 @@
 # Connection vars (ProxyJump, IdentityFile) come from the inventory's own
 # host/group vars, same as every other playbook here — this play does not
 # set its own (opskit #233; the previous version hand-rolled a ProxyCommand
-# that duplicated, and had drifted from, the  group's actual vars).
+# that duplicated, and had drifted from, the cloudflare_api group's actual vars).
 #
 # Usage:
 #   ansible-playbook -i environments/$ACTIVE_ENV/ansible/inventory.yml \
 #     ansible/playbooks/configure-ghcr-auth.yml -l <host> \
 #     --vault-password-file ~/.config/opskit/vault-pass-cs
 #
--l/--limit only intersects with `hosts:` below (cloudflare_api by default) --
+# -l/--limit only intersects with `hosts:` below (cloudflare_api by default) --
 # it can't reach a host that isn't already in that inventory group. For a
-host not yet added to cloudflare_api, target it directly instead:
+# host not yet added to cloudflare_api, target it directly instead:
 #     ansible-playbook ... configure-ghcr-auth.yml -e target_host=<host> ...
 
 - name: Configure GHCR pull credentials
