@@ -22,13 +22,13 @@
 #     ansible/playbooks/configure-ghcr-auth.yml -l <host> \
 #     --vault-password-file ~/.config/opskit/vault-pass-cs
 #
-# -l/--limit only intersects with `hosts:` below ( by default) --
+-l/--limit only intersects with `hosts:` below (cloudflare_api by default) --
 # it can't reach a host that isn't already in that inventory group. For a
-# host not yet added to , target it directly instead:
+host not yet added to cloudflare_api, target it directly instead:
 #     ansible-playbook ... configure-ghcr-auth.yml -e target_host=<host> ...
 
 - name: Configure GHCR pull credentials
-  hosts: "{{ target_host | default('') }}"
+  hosts: "{{ target_host | default('cloudflare_api') }}"
   gather_facts: false
 
   tasks:
