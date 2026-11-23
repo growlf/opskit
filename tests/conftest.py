@@ -26,7 +26,8 @@ import pytest
 # A new server belongs here — tests/test_local_config_isolation.py fails if one
 # reads a gitignored path without an override, which is what keeps this honest.
 CONFIG_PATH_VARS = (
-    "OPSKIT_TENANTS_FILE",
+    # OPSKIT_TENANTS_FILE is read by bin/gen-mcp-config.py (not an mcp server),
+    # so it doesn't belong here — the isolation test only checks mcp/*-mcp-server.py
     "PROXMOX_TENANTS_FILE",
     "TECHNITIUM_SERVERS_FILE",
     "VIKUNJA_TENANTS_FILE",
